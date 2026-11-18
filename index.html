@@ -239,6 +239,17 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 
 /* Betrieb */
 .jump{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
+.season{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:10px 0;background:var(--surface)}
+.season-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.season-head .inp{flex:1;min-width:140px;width:auto;font-weight:600}
+.mini.season{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:13px;color:var(--muted);border:0;padding:0;background:none}
+.mini.season select{border:1px solid var(--line);border-radius:7px;padding:5px 4px;background:var(--surface);min-height:36px;font-size:15px;max-width:9.5em}
+.wkwrap{overflow-x:auto;margin-top:6px}
+table.wk{border-collapse:collapse;font-size:12.5px;width:100%;max-width:420px}
+table.wk th{font-weight:600;color:var(--muted);padding:2px 1px;text-align:center}
+table.wk tbody th{text-align:left;padding-right:4px;color:var(--ink);width:1%}
+table.wk td{text-align:center;padding:3px 1px}
+table.wk input{width:19px;height:19px;margin:0;accent-color:var(--accent)}
 .hrow{display:grid;grid-template-columns:110px auto auto 1fr;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .hrow:last-child{border-bottom:0}
 .hday{font-weight:700}
@@ -398,7 +409,11 @@ function defaults(){
       T('Küche Abend','KA','kueche','16:30','22:00'),
       T('Schank Abend','BA','schank','17:00','00:00'),
       T('Abwasch Abend','AA','abwasch','18:00','23:00')],
-    hours:{weekly:[o(false,false),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true)],special:[]},
+    hours:{weekly:[o(false,false),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true)],
+      seasons:[
+        {id:uid(),name:'Winter',von:'01-07',bis:'03-31',weekly:[o(false,false),o(true,true),o(true,true),o(true,true),o(true,true),o(false,true),o(true,false)]},
+        {id:uid(),name:'Sommer',von:'06-01',bis:'09-30',weekly:[o(true,true),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true)]}],
+      special:[]},
     staff:[],absences:[],shifts:[],reservations:[],
     raumStatus:{},   // "YYYY-MM-DD|M" -> {raumId:true/false}  (nur Abweichungen vom Standard)
     erwartet:{},     // "YYYY-MM-DD|A" -> geschätzte Laufkundschaft
@@ -418,6 +433,7 @@ function migrate(d){
   const toMA=(zu,slots)=>{if(zu)return {m:false,a:false};const sl=(slots||[]).filter(x=>x.von&&x.bis);if(!sl.length)return {m:true,a:true};return {m:sl.some(x=>span(x.von,x.bis)[0]<sp),a:sl.some(x=>span(x.von,x.bis)[1]>sp)};};
   o.hours=(d.hours&&Array.isArray(d.hours.weekly)&&d.hours.weekly.length===7)?{
     weekly:d.hours.weekly.map(w=>('m' in w)?{m:!!w.m,a:!!w.a}:toMA(w.zu,w.slots)),
+    seasons:(Array.isArray(d.hours.seasons)?d.hours.seasons:[]).filter(z=>Array.isArray(z.weekly)&&z.weekly.length===7).map(z=>({id:z.id||uid(),name:z.name||'Saison',von:z.von||'',bis:z.bis||'',weekly:z.weekly.map(w=>({m:!!w.m,a:!!w.a}))})),
     special:(Array.isArray(d.hours.special)?d.hours.special:[]).map(x=>('m' in x)?x:{id:x.id||uid(),name:x.name||'',von:x.von,bis:x.bis||x.von,...toMA(x.typ==='zu',x.slots)})}:def.hours;
   // Abteilungen: Bedarfswerte ergänzen
   o.abteilungen.forEach(a=>{if(a.jeGaeste===undefined){const x=def.abteilungen.find(z=>z.id===a.id);a.jeGaeste=x?x.jeGaeste:0;a.min=x?x.min:0;}});
@@ -510,13 +526,13 @@ const holiday=d=>(holidayObj(d)||{}).n||'';
 function openInfo(d){
   const sp=S.hours.special.find(x=>d>=x.von&&d<=(x.bis||x.von));
   if(sp) return {sid:sp.id,closed:!sp.m&&!sp.a,m:!!sp.m,a:!!sp.a,note:sp.name||((!sp.m&&!sp.a)?'Geschlossen':'Sondertag')};
-  let w=S.hours.weekly[wd(d)], note='';
+  const W=weeklyFor(d); let w=W.w[wd(d)], note='';
   const ho=holidayObj(d);
   if(ho&&ho.frei){
     if(S.betrieb.feiertagRegel==='zu') return {closed:true,m:false,a:false,note:ho.n+' – geschlossen'};
-    if(S.betrieb.feiertagRegel==='sonntag'){ w=S.hours.weekly[6]; note='Feiertag'; }
+    if(S.betrieb.feiertagRegel==='sonntag'){ w=W.w[6]; note='Feiertag'; }
   }
-  return {closed:!w.m&&!w.a,m:!!w.m,a:!!w.a,note:(!w.m&&!w.a)?'Ruhetag':note};
+  return {closed:!w.m&&!w.a,m:!!w.m,a:!!w.a,note:(!w.m&&!w.a)?'Ruhetag':note,saison:W.name};
 }
 const slotsTxt=o=>o.closed?(o.note||'geschlossen'):(o.m&&o.a?'Mittag & Abend':o.m?'nur Mittag':'nur Abend');
 const split=()=>tmin(S.betrieb.abendAb||'16:00');
@@ -526,15 +542,24 @@ function shiftIn(x,k){const [s,e]=span(x.von,x.bis),sp=split();return k==='M'?s<
 function servicesOf(d){const o=openInfo(d);return [o.m&&{k:'M',zeit:''},o.a&&{k:'A',zeit:''}].filter(Boolean);}
 const timeInOpen=(o,t)=>!o.closed&&(svcOfTime(t)==='M'?o.m:o.a);
 /* Saison: MM-DD von/bis, gilt jedes Jahr; auch über den Jahreswechsel (z. B. 11-01 bis 02-28) */
-function inSeason(d,r){
-  if(!r.saisonVon||!r.saisonBis) return true;
-  const md=d.slice(5);
-  return r.saisonVon<=r.saisonBis?(md>=r.saisonVon&&md<=r.saisonBis):(md>=r.saisonVon||md<=r.saisonBis);
+const mdIn=(md,a,b)=>a<=b?(md>=a&&md<=b):(md>=a||md<=b);
+function inSeason(d,r){ if(!r.saisonVon||!r.saisonBis) return true; return mdIn(d.slice(5),r.saisonVon,r.saisonBis); }
+const doy=md=>{const [m,d]=md.split('-').map(Number);return [0,31,60,91,121,152,182,213,244,274,305,335][m-1]+d;};
+const mdLen=(a,b)=>{const x=doy(b)-doy(a);return x>=0?x:x+366;};
+/* Wochenplan für ein Datum: passende Saison (bei Überschneidung die kürzere), sonst Standard */
+function weeklyFor(d){
+  const md=d.slice(5); let best=null;
+  for(const z of (S.hours.seasons||[])){ if(z.von&&z.bis&&mdIn(md,z.von,z.bis)&&(!best||mdLen(z.von,z.bis)<mdLen(best.von,best.bis))) best=z; }
+  return best?{w:best.weekly,name:best.name}:{w:S.hours.weekly,name:''};
 }
 const roomDefault=(d,r)=>inSeason(d,r)&&!!r.standard;
 function roomOpen(d,k,r){const st=S.raumStatus[d+'|'+k];return st&&st[r.id]!==undefined?st[r.id]:roomDefault(d,r);}
 const MONATE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const mdTxt=md=>{const [m,d]=md.split('-').map(Number);return `${d}. ${MONATE[m-1]}`;};
+/* Wochenraster Mittag/Abend (Mo–So) */
+function wkGrid(key,weekly){
+  return `<div class="wkwrap"><table class="wk"><thead><tr><th></th>${WD.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>${[['m','Mittag'],['a','Abend']].map(([k,l])=>`<tr><th>${l}</th>${weekly.map((w,i)=>`<td><input type="checkbox" name="${k}_${key}_${i}" ${w[k]?'checked':''} aria-label="${l} ${WDL[i]}"></td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+}
 /* Tag + Monat ohne Jahr (Saison wiederholt sich jährlich) */
 function mdPick(name,md,lbl){
   const [m,d]=md?md.split('-').map(Number):[0,0];
@@ -702,7 +727,7 @@ function dayCard(d,t){
     body=closedRes.length?`<div class="svc"><div class="notice err" style="margin:0">${esc(o.note||'Geschlossen')}, aber ${sum(closedRes,r=>r.personen)} Gäste reserviert!</div></div>`:'';
   } else body=`<div class="svcs">${svcs.map(s=>svcBlock(svcInfo(d,s.k),s.zeit)).join('')}</div>`;
   return `<section class="card day ${o.closed?'is-closed':''} ${d===t?'is-today':''} ${d<t?'is-past':''}" id="day-${d}">
-    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''} ${o.sid&&!o.closed?`<span class="tag">${esc(o.note)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}</small></div>
+    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''} ${o.sid&&!o.closed?`<span class="tag">${esc(o.note)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}${o.saison&&!o.sid?' · '+esc(o.saison):''}</small></div>
     ${o.sid?`<button class="btn sm ghost" data-a="special-edit" data-id="${o.sid}">Sondertag ändern</button>`:o.closed?`<button class="btn sm" data-a="day-open" data-d="${d}">Ausnahmsweise öffnen</button>`:''}
     ${o.closed?'':`<button class="btn sm ghost" data-a="plan-day" data-d="${d}">Dienstplan</button>`}</header>${body}</section>`;
 }
@@ -947,14 +972,17 @@ function viewSetup(){
   </section>
 
   <section class="card" id="sec-open"><h2>Offen zu Mittag / Abend</h2>
-    <form data-form="hours">
-      <div>${WDL.map((n,i)=>{const w=S.hours.weekly[i];return `<div class="hrow"><div class="hday">${n}</div><label class="chk"><input type="checkbox" name="m${i}" ${w.m?'checked':''}> Mittag</label><label class="chk"><input type="checkbox" name="a${i}" ${w.a?'checked':''}> Abend</label></div>`;}).join('')}</div>
-      <p class="hint">Weder Mittag noch Abend bedeutet Ruhetag.</p>
-      <div class="frow" style="margin-top:10px">
+    <form data-form="hours" id="f-hours">
+      <p class="hint" style="margin-top:0">Der <b>Standard</b> gilt das ganze Jahr. Für einzelne Jahreszeiten legst du <b>Saisonen</b> mit eigenem Wochenplan an, sie wiederholen sich jedes Jahr. Überschneiden sich zwei Saisonen, gilt die kürzere. So geht z. B. „Hochsommer“ innerhalb von „Sommer“. Einzelne Tage regelst du über Sondertage.</p>
+      <div class="season"><div class="season-head"><b>Standard</b> <span class="muted">(übriges Jahr)</span></div>${wkGrid('std',S.hours.weekly)}</div>
+      ${(S.hours.seasons||[]).map(z=>`<div class="season"><div class="season-head"><input class="inp" name="sn_${z.id}" value="${esc(z.name)}" aria-label="Name der Saison" required><button type="button" class="btn sm danger-ghost" data-a="season-del" data-id="${z.id}">Entfernen</button></div>
+        <div class="mini season" style="margin:6px 0">${mdPick('sv_'+z.id,z.von,'von')} bis ${mdPick('sb_'+z.id,z.bis,'bis')}</div>${wkGrid(z.id,z.weekly)}</div>`).join('')}
+      <div class="btn-row" style="margin:10px 0"><button type="button" class="btn sm ghost" data-a="season-add">+ Saison</button></div>
+      <div class="frow" style="margin-top:6px">
         <div class="field"><label for="hs-ab">Abend beginnt ab</label><input id="hs-ab" type="time" name="abendAb" value="${esc(b.abendAb||'16:00')}"></div>
         <div class="field"><label for="hs-rule">An Feiertagen</label><select id="hs-rule" name="feiertagRegel">${opt('sonntag','wie Sonntag',b.feiertagRegel)}${opt('normal','wie normaler Wochentag',b.feiertagRegel)}${opt('zu','geschlossen',b.feiertagRegel)}</select></div>
       </div>
-      <p class="hint">Ab dieser Uhrzeit zählen Reservierungen zum Abend, ebenso Schichten, die dann noch laufen.</p>
+      <p class="hint">Ab dieser Uhrzeit zählen Reservierungen zum Abend, ebenso Schichten, die dann noch laufen. Ist an einem Tag weder Mittag noch Abend angehakt, ist Ruhetag.</p>
       <div class="btn-row" style="margin-top:12px"><button class="btn primary">Speichern</button></div>
     </form>
   </section>
@@ -1172,11 +1200,14 @@ function repRes(from,to){
 }
 function repOpen(from,to){
   const wtxt=w=>slotsTxt({closed:!w.m&&!w.a,m:w.m,a:w.a,note:'Ruhetag'});
-  let html=`<table class="rep-tbl"><thead><tr><th style="width:120px"></th><th>Mittag</th><th>Abend</th></tr></thead><tbody>${WDL.map((n,i)=>{const w=S.hours.weekly[i];return `<tr class="${!w.m&&!w.a?'closed':''}"><th>${n}</th><td>${w.m?'offen':'–'}</td><td>${w.a?'offen':'–'}</td></tr>`;}).join('')}</tbody></table>`;
-  let text=`*Geöffnet ${S.betrieb.name}*\n`+WDL.map((n,i)=>`${n}: ${wtxt(S.hours.weekly[i])}`).join('\n');
+  const tbl=weekly=>`<table class="rep-tbl"><thead><tr><th style="width:120px"></th><th>Mittag</th><th>Abend</th></tr></thead><tbody>${WDL.map((n,i)=>{const w=weekly[i];return `<tr class="${!w.m&&!w.a?'closed':''}"><th>${n}</th><td>${w.m?'offen':'–'}</td><td>${w.a?'offen':'–'}</td></tr>`;}).join('')}</tbody></table>`;
+  const seas=(S.hours.seasons||[]).filter(z=>z.von&&z.bis);
+  let html=`<h2>Standard${seas.length?' (übriges Jahr)':''}</h2>`+tbl(S.hours.weekly);
+  let text=`*Geöffnet ${S.betrieb.name}*\n\n_Standard_\n`+WDL.map((n,i)=>`${n}: ${wtxt(S.hours.weekly[i])}`).join('\n');
+  seas.forEach(z=>{html+=`<h2>${esc(z.name)} · ${esc(mdTxt(z.von))} – ${esc(mdTxt(z.bis))}</h2>`+tbl(z.weekly);text+=`\n\n_${z.name} (${mdTxt(z.von)} – ${mdTxt(z.bis)})_\n`+WDL.map((n,i)=>`${n}: ${wtxt(z.weekly[i])}`).join('\n');});
   const ex=[]; days(from,to).forEach(d=>{const sp=S.hours.special.find(x=>d>=x.von&&d<=(x.bis||x.von)),ho=holidayObj(d);if(sp||(ho&&ho.frei))ex.push({d,why:sp?(sp.name||''):ho.n,txt:slotsTxt(openInfo(d))});});
   if(ex.length){html+=`<h2>Abweichungen ${esc(rangeTxt(from,to))}</h2><table class="rep-tbl"><tbody>${ex.map(e=>`<tr><th style="width:120px">${esc(fmtDay(e.d))}</th><td>${esc(e.why)}</td><td>${esc(e.txt)}</td></tr>`).join('')}</tbody></table>`;text+=`\n\n*Abweichungen*\n`+ex.map(e=>`${fmtDay(e.d)} ${e.why}: ${e.txt}`).join('\n');}
-  return {title:'Geöffnet Mittag / Abend',sub:ex.length?'inkl. Abweichungen '+rangeTxt(from,to):'',html,text};
+  return {title:'Geöffnet Mittag / Abend',sub:'',html,text};
 }
 function repDoc(rep){
   const b=S.betrieb;
@@ -1318,6 +1349,8 @@ const ACT={
   'tpl-edit':d=>openTplForm(d.id),
   'tpl-del':d=>{commit('Vorlage gelöscht',()=>{S.templates=S.templates.filter(t=>t.id!==d.id);});closeModal();},
   'special-new':()=>openSpecialForm(),
+  'season-add':()=>{applyHoursForm();commit(null,()=>{(S.hours.seasons=S.hours.seasons||[]).push({id:uid(),name:'Neue Saison',von:'',bis:'',weekly:S.hours.weekly.map(w=>({...w}))});});toast('Saison angelegt: Name, Zeitraum und Tage einstellen, dann speichern');},
+  'season-del':async d=>{const z=(S.hours.seasons||[]).find(x=>x.id===d.id);if(!z)return;if(await ask(`„${z.name}“ entfernen?`,'In diesem Zeitraum gilt dann wieder der Standard.','Entfernen',true)){applyHoursForm();commit('Saison entfernt',()=>{S.hours.seasons=S.hours.seasons.filter(x=>x.id!==z.id);});}},
   'day-open':d=>{commit(`${fmtDay(d.d)} ausnahmsweise offen`,()=>{S.hours.special.push({id:uid(),name:'Ausnahmsweise offen',von:d.d,bis:d.d,m:true,a:true});});},
   'special-edit':d=>openSpecialForm(d.id),
   'special-del':d=>{commit('Gelöscht',()=>{S.hours.special=S.hours.special.filter(x=>x.id!==d.id);});closeModal();},
@@ -1345,6 +1378,12 @@ const ACT={
 
 /* ---------- Formulare ---------- */
 const fd=f=>Object.fromEntries(new FormData(f).entries());
+function applyHoursForm(v){
+  if(!v){const f=$('#f-hours'); if(!f) return; v=fd(f);}
+  const read=key=>WDL.map((_,i)=>({m:!!v[`m_${key}_${i}`],a:!!v[`a_${key}_${i}`]}));
+  S.hours.weekly=read('std');
+  (S.hours.seasons||[]).forEach(z=>{if(v['sn_'+z.id]===undefined)return;z.name=v['sn_'+z.id].trim()||z.name;z.von=mdRead(v,'sv_'+z.id);z.bis=mdRead(v,'sb_'+z.id);z.weekly=read(z.id);});
+}
 function applyAbtForm(){
   const f=$('#f-abt'); if(!f) return; const v=fd(f);
   S.abteilungen.forEach(a=>{if(v['an_'+a.id]!==undefined){a.name=v['an_'+a.id].trim()||a.name;a.farbe=col(v['ac_'+a.id]);a.jeGaeste=Math.max(0,+v['aj_'+a.id]||0);a.min=Math.max(0,+v['am_'+a.id]||0);}});
@@ -1401,9 +1440,11 @@ const FORMS={
   hours:f=>{
     const v=fd(f);
     commit('Gespeichert',()=>{
-      S.hours.weekly=WDL.map((_,i)=>({m:!!v['m'+i],a:!!v['a'+i]}));
+      applyHoursForm(v);
       S.betrieb.feiertagRegel=v.feiertagRegel; S.betrieb.abendAb=v.abendAb||'16:00';
     });
+    const bad=(S.hours.seasons||[]).filter(z=>!z.von||!z.bis);
+    if(bad.length) toast(`Bei „${bad[0].name}“ fehlt der Zeitraum, die Saison gilt so nicht`,{err:true});
   },
   abt:()=>commit('Gespeichert',applyAbtForm),
   betrieb:f=>{const v=fd(f);commit('Gespeichert',()=>{Object.assign(S.betrieb,{name:v.name.trim()||'Gasthof Ratz',adresse:v.adresse.trim(),telefon:v.telefon.trim()});});},
