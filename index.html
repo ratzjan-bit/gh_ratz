@@ -253,6 +253,8 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 .erow input.inp{flex:1;min-width:120px;width:auto}
 .erow .mini{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
 .erow .mini input{width:58px;border:1px solid var(--line);border-radius:7px;padding:5px 6px;background:var(--surface);min-height:36px;font-size:15px;text-align:right}
+.erow .mini input[type="date"]{width:136px;min-width:0;text-align:left;font-size:14px}
+.erow .mini.season{flex-wrap:wrap;max-width:100%}
 .snap{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .snap:last-child{border-bottom:0}
 .snap .grow{flex:1;min-width:180px}
@@ -388,7 +390,7 @@ function defaults(){
       {id:'gaststube',name:'Gaststube',plaetze:60,standard:true},
       {id:'stueberl',name:'Stüberl',plaetze:25,standard:false},
       {id:'saal',name:'Saal',plaetze:90,standard:false},
-      {id:'garten',name:'Gastgarten',plaetze:80,standard:false}],
+      {id:'garten',name:'Gastgarten',plaetze:80,standard:true,saisonVon:'06-01',saisonBis:'09-30'}],
     templates:[
       T('Service Mittag','SM','service','10:30','15:00'),
       T('Service Abend','SA','service','17:00','23:00'),
@@ -417,7 +419,8 @@ function migrate(d){
   // Abteilungen: Bedarfswerte ergänzen
   o.abteilungen.forEach(a=>{if(a.jeGaeste===undefined){const x=def.abteilungen.find(z=>z.id===a.id);a.jeGaeste=x?x.jeGaeste:0;a.min=x?x.min:0;}});
   // Räume: IDs & Standard
-  o.raeume.forEach((r,i)=>{if(!r.id)r.id=uid();if(r.standard===undefined)r.standard=i===0;r.plaetze=+r.plaetze||0;});
+  o.raeume.forEach((r,i)=>{if(!r.id)r.id=uid();if(r.standard===undefined)r.standard=i===0;r.plaetze=+r.plaetze||0;
+    if(r.saisonVon===undefined){ if(r.id==='garten'){r.saisonVon='06-01';r.saisonBis='09-30';r.standard=true;} else {r.saisonVon='';r.saisonBis='';} }});
   // Personal: nur noch Fix / Springer
   o.staff.forEach(s=>{if(!s.typ)s.typ=['Minijob','Aushilfe','Saisonkraft'].includes(s.vertrag)?'springer':'fix';if(s.aktiv===undefined)s.aktiv=true;});
   // Reservierungen: Raum per ID
@@ -531,14 +534,24 @@ function timeInOpen(o,t){
   if(o.closed) return false; if(!o.slots.length) return true;
   const m=tmin(t); return o.slots.some(s=>{const [a,b]=span(s.von,s.bis);return (m>=a&&m<b)||(m+1440>=a&&m+1440<b);});
 }
-function roomOpen(d,k,r){const st=S.raumStatus[d+'|'+k];return st&&st[r.id]!==undefined?st[r.id]:!!r.standard;}
+/* Saison: MM-DD von/bis, gilt jedes Jahr; auch über den Jahreswechsel (z. B. 11-01 bis 02-28) */
+function inSeason(d,r){
+  if(!r.saisonVon||!r.saisonBis) return true;
+  const md=d.slice(5);
+  return r.saisonVon<=r.saisonBis?(md>=r.saisonVon&&md<=r.saisonBis):(md>=r.saisonVon||md<=r.saisonBis);
+}
+const roomDefault=(d,r)=>inSeason(d,r)&&!!r.standard;
+function roomOpen(d,k,r){const st=S.raumStatus[d+'|'+k];return st&&st[r.id]!==undefined?st[r.id]:roomDefault(d,r);}
+const MONATE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const mdTxt=md=>{const [m,d]=md.split('-').map(Number);return `${d}. ${MONATE[m-1]}`;};
+const seasonTxt=r=>r.saisonVon&&r.saisonBis?`${mdTxt(r.saisonVon)} – ${mdTxt(r.saisonBis)}`:'ganzjährig';
 function bedarf(a,g){const n=a.jeGaeste>0?Math.ceil(g/a.jeGaeste):0;const v=Math.max(n,+a.min||0);return (a.jeGaeste>0||a.min>0)?v:null;}
 
 /* Kernfrage: Gäste, Räume, Personal für einen Dienst */
 function svcInfo(d,k){
   const res=S.reservations.filter(r=>r.datum===d&&svcOfTime(r.zeit)===k).sort(byTime);
   const reserviert=sum(res,r=>r.personen), erwartet=+S.erwartet[d+'|'+k]||0, gaeste=reserviert+erwartet;
-  const rooms=S.raeume.map(r=>{const rr=res.filter(x=>x.raum===r.id);return {r,open:roomOpen(d,k,r),pers:sum(rr,x=>x.personen)};});
+  const rooms=S.raeume.map(r=>{const rr=res.filter(x=>x.raum===r.id);return {r,open:roomOpen(d,k,r),pers:sum(rr,x=>x.personen),saison:inSeason(d,r)};});
   const ohneRaum=sum(res.filter(x=>!raumById(x.raum)),x=>x.personen);
   const plaetze=sum(rooms.filter(z=>z.open),z=>z.r.plaetze);
   const shifts=S.shifts.filter(x=>x.datum===d&&shiftIn(x,k));
@@ -694,9 +707,9 @@ function dayCard(d,t){
 function svcBlock(I,zeit){
   const key=I.d+'|'+I.k;
   const status=I.fehlt.length?`<span class="pill err">${I.fehlt.map(z=>`${esc(z.a.name)}: ${z.need-z.n} fehlt`).join(' · ')}</span>`:(I.depts.some(z=>z.need!==null)?'<span class="pill ok">Personal passt</span>':'');
-  const rooms=I.rooms.map(z=>{
+  const rooms=I.rooms.filter(z=>z.saison||z.open||z.pers).map(z=>{
     const cls=z.open?'on':(z.pers?'alert':''), full=z.open&&z.r.plaetze&&z.pers>z.r.plaetze;
-    const info=z.open?(z.r.plaetze?`${z.pers} / ${z.r.plaetze}`:`${z.pers} res.`):(z.pers?`zu · ${z.pers} res.!`:'zu');
+    const info=(z.open?(z.r.plaetze?`${z.pers} / ${z.r.plaetze}`:`${z.pers} res.`):(z.pers?`zu · ${z.pers} res.!`:'zu'))+(z.saison?'':' · außer Saison');
     return `<button class="room ${cls} ${full?'full':''}" data-a="room" data-d="${I.d}" data-k="${I.k}" data-r="${z.r.id}" aria-pressed="${z.open}" title="Tippen: auf/zu"><b>${esc(z.r.name)}</b><small>${info}</small></button>`;
   }).join('');
   const staff=I.depts.filter(z=>z.n||z.need).map(z=>`<span class="sl ${z.need!==null&&z.need>z.n?'short':''}"><span class="dot" style="--c:${col(z.a.farbe)}"></span>${esc(z.a.name)} <b>${z.n}</b>${z.need!==null?`<span class="muted">/${z.need}</span>`:''}</span>`).join('')||'<span class="muted" style="font-size:13px">niemand eingeteilt</span>';
@@ -890,7 +903,7 @@ function openResForm({id,d,z}){
     <div class="frow"><div class="field"><label for="rs-p">Personen</label><input id="rs-p" type="number" inputmode="numeric" name="personen" min="1" max="999" value="${esc(v.personen)}" required data-ch="resdt"></div>
     <div class="field"><label for="rs-d">Datum</label><input id="rs-d" type="date" name="datum" value="${v.datum}" required data-ch="resdt"></div>
     <div class="field"><label for="rs-z">Uhrzeit</label><input id="rs-z" type="time" name="zeit" value="${v.zeit}" required data-ch="resdt"></div></div>
-    <div class="field"><label for="rs-r">Raum</label><select id="rs-r" name="raum" data-ch="resdt">${opt('','– noch offen –',v.raum)}${S.raeume.map(x=>opt(x.id,x.name+(x.plaetze?` (${x.plaetze} Plätze)`:''),v.raum)).join('')}</select></div>
+    <div class="field"><label for="rs-r">Raum</label><select id="rs-r" name="raum" data-ch="resdt">${opt('','– noch offen –',v.raum)}${S.raeume.map(x=>opt(x.id,x.name+(x.plaetze?` (${x.plaetze} Plätze)`:'')+(x.saisonVon?` · Saison ${seasonTxt(x)}`:''),v.raum)).join('')}</select></div>
     <div id="reswarn"></div>
   </form>`;
   modal(r?'Reservierung ändern':'Neue Reservierung',body,`${r?`<button type="button" class="btn danger-ghost left" data-a="res-del" data-id="${r.id}">Löschen</button>`:''}<button type="button" class="btn" data-a="mclose">Abbrechen</button><button class="btn primary" form="f-res">Speichern</button>`);
@@ -907,7 +920,7 @@ function updResWarn(){
     const others=S.reservations.filter(r=>r.datum===d&&r.raum===rm.id&&svcOfTime(r.zeit)===k&&r.id!==f.id.value);
     const n=sum(others,r=>r.personen)+(+f.personen.value||0);
     const open=roomOpen(d,k,rm);
-    h+=`<p class="hint" style="margin:0">${esc(rm.name)} am ${esc(fmtDay(d))} ${SVCADV[k]}: ${open?'offen':'<b>derzeit zu</b>, wird beim Speichern geöffnet'} · mit dieser Reservierung ${n}${rm.plaetze?` von ${rm.plaetze} Plätzen${n>rm.plaetze?' – <b>zu voll!</b>':''}`:' Gäste'}.</p>`;
+    h+=`<p class="hint" style="margin:0">${esc(rm.name)} am ${esc(fmtDay(d))} ${SVCADV[k]}: ${open?'offen':`<b>derzeit zu${inSeason(d,rm)?'':' (außerhalb der Saison)'}</b>, wird beim Speichern geöffnet`} · mit dieser Reservierung ${n}${rm.plaetze?` von ${rm.plaetze} Plätzen${n>rm.plaetze?' – <b>zu voll!</b>':''}`:' Gäste'}.</p>`;
   }
   el.innerHTML=h;
 }
@@ -952,8 +965,8 @@ function viewSetup(){
 
   <form data-form="abt" id="f-abt" class="stack">
   <section class="card" id="sec-rooms"><h2>Räume</h2>
-    <p class="hint" style="margin-top:0">„normal offen“: So startet der Raum in der Übersicht. Pro Tag und Dienst schaltest du ihn dort per Tipp auf oder zu.</p>
-    ${S.raeume.map(r=>`<div class="erow"><input class="inp" name="rn_${r.id}" value="${esc(r.name)}" required aria-label="Raum"><span class="mini"><input type="number" min="0" name="rp_${r.id}" value="${esc(r.plaetze||'')}" aria-label="Plätze"> Plätze</span><label class="chk"><input type="checkbox" name="rs_${r.id}" ${r.standard?'checked':''}> normal offen</label><button type="button" class="btn sm danger-ghost" data-a="raum-del" data-id="${r.id}">Entfernen</button></div>`).join('')}
+    <p class="hint" style="margin-top:0">„normal offen“: So startet der Raum in der Übersicht. Pro Tag und Dienst schaltest du ihn dort per Tipp auf oder zu.<br><b>Saison:</b> Außerhalb dieses Zeitraums ist der Raum zu und erscheint nicht in der Übersicht. Der Zeitraum gilt jedes Jahr, das Jahr im Datum spielt keine Rolle. Leer bedeutet ganzjährig.</p>
+    ${S.raeume.map(r=>`<div class="erow"><input class="inp" name="rn_${r.id}" value="${esc(r.name)}" required aria-label="Raum"><span class="mini"><input type="number" min="0" name="rp_${r.id}" value="${esc(r.plaetze||'')}" aria-label="Plätze"> Plätze</span><label class="chk"><input type="checkbox" name="rs_${r.id}" ${r.standard?'checked':''}> normal offen</label><span class="mini season">Saison <input type="date" name="rsv_${r.id}" value="${r.saisonVon?P(today()).getFullYear()+'-'+r.saisonVon:''}" aria-label="Saison von"> – <input type="date" name="rsb_${r.id}" value="${r.saisonBis?P(today()).getFullYear()+'-'+r.saisonBis:''}" aria-label="Saison bis"></span>${r.saisonVon?`<small class="muted">${esc(seasonTxt(r))}</small>`:''}<button type="button" class="btn sm danger-ghost" data-a="raum-del" data-id="${r.id}">Entfernen</button></div>`).join('')}
     <div class="btn-row" style="margin-top:8px"><button type="button" class="btn sm ghost" data-a="raum-add">+ Raum</button><span class="spacer"></span><button class="btn primary">Speichern</button></div>
   </section>
   <section class="card" id="sec-abt"><h2>Abteilungen & Personalbedarf</h2>
@@ -1252,7 +1265,7 @@ const ACT={
   room:d=>{
     const r=raumById(d.r); if(!r) return; const key=d.d+'|'+d.k;
     const now=roomOpen(d.d,d.k,r);
-    commit(null,()=>{const st=S.raumStatus[key]=S.raumStatus[key]||{}; if(!now===!!r.standard) delete st[r.id]; else st[r.id]=!now; if(!Object.keys(st).length) delete S.raumStatus[key];});
+    commit(null,()=>{const st=S.raumStatus[key]=S.raumStatus[key]||{}; if(!now===roomDefault(d.d,r)) delete st[r.id]; else st[r.id]=!now; if(!Object.keys(st).length) delete S.raumStatus[key];});
     toast(`${r.name} am ${fmtDay(d.d)} ${SVCADV[d.k]}: ${now?'zu':'offen'}`,{undo:true});
   },
   who:d=>openWho(d.d,d.k,d.abt||''),
@@ -1312,7 +1325,7 @@ const ACT={
     const n=S.staff.filter(s=>s.abt===a.id).length;
     if(await ask(`„${a.name}“ entfernen?`,n?`${n} Personen sind dieser Abteilung zugeordnet und landen danach unter „Sonstige“.`:'','Entfernen',true)){applyAbtForm();commit('Abteilung entfernt',()=>{S.abteilungen=S.abteilungen.filter(x=>x.id!==a.id);});}
   },
-  'raum-add':()=>{applyAbtForm();commit(null,()=>{S.raeume.push({id:uid(),name:'Neuer Raum',plaetze:0,standard:false});});},
+  'raum-add':()=>{applyAbtForm();commit(null,()=>{S.raeume.push({id:uid(),name:'Neuer Raum',plaetze:0,standard:false,saisonVon:'',saisonBis:''});});},
   'raum-del':async d=>{
     const r=raumById(d.id); if(!r) return;
     const n=S.reservations.filter(x=>x.raum===r.id).length;
@@ -1332,7 +1345,9 @@ const fd=f=>Object.fromEntries(new FormData(f).entries());
 function applyAbtForm(){
   const f=$('#f-abt'); if(!f) return; const v=fd(f);
   S.abteilungen.forEach(a=>{if(v['an_'+a.id]!==undefined){a.name=v['an_'+a.id].trim()||a.name;a.farbe=col(v['ac_'+a.id]);a.jeGaeste=Math.max(0,+v['aj_'+a.id]||0);a.min=Math.max(0,+v['am_'+a.id]||0);}});
-  S.raeume.forEach(r=>{if(v['rn_'+r.id]!==undefined){r.name=v['rn_'+r.id].trim()||r.name;r.plaetze=+v['rp_'+r.id]||0;r.standard=!!v['rs_'+r.id];}});
+  S.raeume.forEach(r=>{if(v['rn_'+r.id]!==undefined){r.name=v['rn_'+r.id].trim()||r.name;r.plaetze=+v['rp_'+r.id]||0;r.standard=!!v['rs_'+r.id];
+    const a=(v['rsv_'+r.id]||'').slice(5), b=(v['rsb_'+r.id]||'').slice(5);
+    if(a&&b){r.saisonVon=a;r.saisonBis=b;} else {r.saisonVon='';r.saisonBis='';}}});
 }
 const FORMS={
   shift:f=>{
@@ -1365,7 +1380,7 @@ const FORMS={
       if(v.id)Object.assign(S.reservations.find(r=>r.id===v.id),data);else S.reservations.push({id:uid(),...data});
       // Raum mit Reservierung automatisch öffnen
       const rm=raumById(data.raum), k=svcOfTime(data.zeit);
-      if(rm&&!roomOpen(data.datum,k,rm)){const key=data.datum+'|'+k;const st=S.raumStatus[key]=S.raumStatus[key]||{};if(rm.standard)delete st[rm.id];else st[rm.id]=true;if(!Object.keys(st).length)delete S.raumStatus[key];}
+      if(rm&&!roomOpen(data.datum,k,rm)){const key=data.datum+'|'+k;const st=S.raumStatus[key]=S.raumStatus[key]||{};if(roomDefault(data.datum,rm))delete st[rm.id];else st[rm.id]=true;if(!Object.keys(st).length)delete S.raumStatus[key];}
     });
     closeModal();
   },
