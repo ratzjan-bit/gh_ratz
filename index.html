@@ -239,14 +239,14 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 
 /* Betrieb */
 .jump{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
-.hrow{display:grid;grid-template-columns:92px 104px 1fr;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.hrow{display:grid;grid-template-columns:110px auto auto 1fr;gap:8px 10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
 .hrow:last-child{border-bottom:0}
 .hday{font-weight:700}
 .hslots{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
 .hslots span,.hslots label{display:inline-flex;align-items:center;gap:4px;font-size:13px}
 .hslots input,.erow input.t{border:1px solid var(--line);border-radius:7px;padding:5px 6px;background:var(--surface);min-height:36px;font-size:15px;width:auto}
 .hrow.is-zu .hslots{opacity:.4}
-@media (max-width:560px){ .hrow{grid-template-columns:1fr auto} .hslots{grid-column:1 / -1} }
+
 .erow{display:flex;gap:8px;align-items:center;padding:6px 0;flex-wrap:wrap;border-bottom:1px solid var(--line)}
 .erow:last-of-type{border-bottom:0}
 .erow input[type="color"]{width:44px;height:40px;padding:2px;border:1px solid var(--line);border-radius:8px;background:var(--surface);flex:none}
@@ -327,7 +327,7 @@ textarea.code{width:100%;min-height:160px;font:12px/1.4 ui-monospace,Menlo,Conso
 /* ==========================================================================
    Gasthof Ratz – Planungshilfe für den Chef-Kellner
    Übersicht (Gäste/Räume/Personal je Mittag & Abend), Dienstplan, Personal,
-   Reservierungen, Öffnungszeiten, Reports. Daten lokal im Browser + Backups.
+   Reservierungen, offene Tage (Mittag/Abend), Reports. Daten lokal im Browser + Backups.
    ========================================================================== */
 const APP_ID='gasthof-ratz-planer', VERSION=2;
 const KEY='gasthofRatz.data.v1', SNAP_KEY='gasthofRatz.snapshots.v1', UI_KEY='gasthofRatz.ui.v2';
@@ -376,8 +376,7 @@ const undoStack=[];
 
 function defaults(){
   const T=(name,kurz,abt,von,bis)=>({id:uid(),name,kurz,abt,von,bis});
-  const o=(zu,slots,kueche)=>({zu,slots,kueche});
-  const two=[{von:'11:30',bis:'14:00'},{von:'17:30',bis:'22:00'}];
+  const o=(m,a)=>({m,a});
   return {
     app:APP_ID,version:VERSION,
     betrieb:{name:'Gasthof Ratz',adresse:'',telefon:'',feiertagRegel:'sonntag',abendAb:'16:00'},
@@ -399,8 +398,7 @@ function defaults(){
       T('Küche Abend','KA','kueche','16:30','22:00'),
       T('Schank Abend','BA','schank','17:00','00:00'),
       T('Abwasch Abend','AA','abwasch','18:00','23:00')],
-    hours:{weekly:[o(true,[],''),o(false,two,'21:00'),o(false,two,'21:00'),o(false,two,'21:00'),
-      o(false,[{von:'11:30',bis:'14:00'},{von:'17:30',bis:'23:00'}],'21:30'),o(false,[{von:'11:30',bis:'23:00'}],'21:30'),o(false,[{von:'11:30',bis:'21:00'}],'20:00')],special:[]},
+    hours:{weekly:[o(false,false),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true),o(true,true)],special:[]},
     staff:[],absences:[],shifts:[],reservations:[],
     raumStatus:{},   // "YYYY-MM-DD|M" -> {raumId:true/false}  (nur Abweichungen vom Standard)
     erwartet:{},     // "YYYY-MM-DD|A" -> geschätzte Laufkundschaft
@@ -415,7 +413,12 @@ function migrate(d){
   o.meta=Object.assign({},def.meta,d.meta||{});
   for(const k of ['staff','absences','shifts','reservations','templates','abteilungen','raeume']) if(!Array.isArray(o[k])) o[k]=def[k];
   for(const k of ['raumStatus','erwartet']) if(!o[k]||typeof o[k]!=='object'||Array.isArray(o[k])) o[k]={};
-  o.hours=(d.hours&&Array.isArray(d.hours.weekly)&&d.hours.weekly.length===7)?{weekly:d.hours.weekly.map(w=>({zu:!!w.zu,slots:Array.isArray(w.slots)?w.slots:[],kueche:w.kueche||''})),special:Array.isArray(d.hours.special)?d.hours.special:[]}:def.hours;
+  // Öffnung nur noch als Mittag/Abend (ältere Daten mit Uhrzeiten werden umgerechnet)
+  const sp=tmin(o.betrieb.abendAb||'16:00');
+  const toMA=(zu,slots)=>{if(zu)return {m:false,a:false};const sl=(slots||[]).filter(x=>x.von&&x.bis);if(!sl.length)return {m:true,a:true};return {m:sl.some(x=>span(x.von,x.bis)[0]<sp),a:sl.some(x=>span(x.von,x.bis)[1]>sp)};};
+  o.hours=(d.hours&&Array.isArray(d.hours.weekly)&&d.hours.weekly.length===7)?{
+    weekly:d.hours.weekly.map(w=>('m' in w)?{m:!!w.m,a:!!w.a}:toMA(w.zu,w.slots)),
+    special:(Array.isArray(d.hours.special)?d.hours.special:[]).map(x=>('m' in x)?x:{id:x.id||uid(),name:x.name||'',von:x.von,bis:x.bis||x.von,...toMA(x.typ==='zu',x.slots)})}:def.hours;
   // Abteilungen: Bedarfswerte ergänzen
   o.abteilungen.forEach(a=>{if(a.jeGaeste===undefined){const x=def.abteilungen.find(z=>z.id===a.id);a.jeGaeste=x?x.jeGaeste:0;a.min=x?x.min:0;}});
   // Räume: IDs & Standard
@@ -506,34 +509,22 @@ const holiday=d=>(holidayObj(d)||{}).n||'';
 /* ---------- Öffnungszeiten & Dienste (Mittag/Abend) ---------- */
 function openInfo(d){
   const sp=S.hours.special.find(x=>d>=x.von&&d<=(x.bis||x.von));
-  if(sp){ const zu=sp.typ==='zu'; return {closed:zu,slots:zu?[]:(sp.slots||[]).filter(s=>s.von&&s.bis),kueche:zu?'':(sp.kueche||''),note:sp.name||(zu?'Geschlossen':'Sonderöffnung')}; }
+  if(sp) return {closed:!sp.m&&!sp.a,m:!!sp.m,a:!!sp.a,note:sp.name||((!sp.m&&!sp.a)?'Geschlossen':'Sondertag')};
   let w=S.hours.weekly[wd(d)], note='';
   const ho=holidayObj(d);
   if(ho&&ho.frei){
-    if(S.betrieb.feiertagRegel==='zu') return {closed:true,slots:[],kueche:'',note:ho.n+' – geschlossen'};
+    if(S.betrieb.feiertagRegel==='zu') return {closed:true,m:false,a:false,note:ho.n+' – geschlossen'};
     if(S.betrieb.feiertagRegel==='sonntag'){ w=S.hours.weekly[6]; note='Feiertag'; }
   }
-  return {closed:!!w.zu,slots:w.zu?[]:(w.slots||[]).filter(s=>s.von&&s.bis),kueche:w.zu?'':(w.kueche||''),note:w.zu?'Ruhetag':note};
+  return {closed:!w.m&&!w.a,m:!!w.m,a:!!w.a,note:(!w.m&&!w.a)?'Ruhetag':note};
 }
-const slotsTxt=o=>o.closed?(o.note||'geschlossen'):((o.slots.map(s=>`${s.von}–${s.bis}`).join(' · '))||'geöffnet');
+const slotsTxt=o=>o.closed?(o.note||'geschlossen'):(o.m&&o.a?'Mittag & Abend':o.m?'nur Mittag':'nur Abend');
 const split=()=>tmin(S.betrieb.abendAb||'16:00');
 const svcOfTime=t=>tmin(t)<split()?'M':'A';
 function shiftIn(x,k){const [s,e]=span(x.von,x.bis),sp=split();return k==='M'?s<sp:e>sp;}
-/* Welche Dienste gibt es an diesem Tag, und zu welchen Zeiten? */
-function servicesOf(d){
-  const o=openInfo(d); if(o.closed) return [];
-  const sp=split(), out=[];
-  const slots=o.slots.length?o.slots:[{von:'11:00',bis:'22:00'}];
-  const m=[],a=[];
-  slots.forEach(sl=>{const [s,e]=span(sl.von,sl.bis);if(s<sp)m.push(`${hhmm(s)}–${hhmm(Math.min(e,sp))}`);if(e>sp)a.push(`${hhmm(Math.max(s,sp))}–${hhmm(e)}`);});
-  if(m.length) out.push({k:'M',zeit:m.join(' · ')});
-  if(a.length) out.push({k:'A',zeit:a.join(' · ')});
-  return out;
-}
-function timeInOpen(o,t){
-  if(o.closed) return false; if(!o.slots.length) return true;
-  const m=tmin(t); return o.slots.some(s=>{const [a,b]=span(s.von,s.bis);return (m>=a&&m<b)||(m+1440>=a&&m+1440<b);});
-}
+/* Welche Dienste (Mittag/Abend) gibt es an diesem Tag? */
+function servicesOf(d){const o=openInfo(d);return [o.m&&{k:'M',zeit:''},o.a&&{k:'A',zeit:''}].filter(Boolean);}
+const timeInOpen=(o,t)=>!o.closed&&(svcOfTime(t)==='M'?o.m:o.a);
 /* Saison: MM-DD von/bis, gilt jedes Jahr; auch über den Jahreswechsel (z. B. 11-01 bis 02-28) */
 function inSeason(d,r){
   if(!r.saisonVon||!r.saisonBis) return true;
@@ -711,7 +702,7 @@ function dayCard(d,t){
     body=closedRes.length?`<div class="svc"><div class="notice err" style="margin:0">${esc(o.note||'Geschlossen')}, aber ${sum(closedRes,r=>r.personen)} Gäste reserviert!</div></div>`:'';
   } else body=`<div class="svcs">${svcs.map(s=>svcBlock(svcInfo(d,s.k),s.zeit)).join('')}</div>`;
   return `<section class="card day ${o.closed?'is-closed':''} ${d===t?'is-today':''} ${d<t?'is-past':''}" id="day-${d}">
-    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o)+(o.kueche?' · Küche bis '+o.kueche:''))}</small></div>
+    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}</small></div>
     ${o.closed?'':`<button class="btn sm ghost" data-a="plan-day" data-d="${d}">Dienstplan</button>`}</header>${body}</section>`;
 }
 function svcBlock(I,zeit){
@@ -925,7 +916,7 @@ function updResWarn(){
   const o=openInfo(d), k=svcOfTime(z), rm=raumById(f.raum.value);
   let h='';
   if(o.closed) h+=`<div class="notice err">${esc(fmtDay(d))}: ${esc(o.note||'geschlossen')}.</div>`;
-  else if(!timeInOpen(o,z)) h+=`<div class="notice warn">${esc(z)} liegt außerhalb der Öffnungszeiten (${esc(slotsTxt(o))}).</div>`;
+  else if(!timeInOpen(o,z)) h+=`<div class="notice warn">${esc(fmtDay(d))} ist ${SVCADV[svcOfTime(z)]} geschlossen (${esc(slotsTxt(o))}).</div>`;
   if(rm&&!o.closed){
     const others=S.reservations.filter(r=>r.datum===d&&r.raum===rm.id&&svcOfTime(r.zeit)===k&&r.id!==f.id.value);
     const n=sum(others,r=>r.personen)+(+f.personen.value||0);
@@ -941,7 +932,7 @@ function viewSetup(){
   const hasSample=S.staff.some(s=>s.sample)||S.reservations.some(r=>r.sample);
   const special=S.hours.special.filter(x=>UI.showPastSpecial||(x.bis||x.von)>=t).sort((a,c)=>a.von.localeCompare(c.von));
   return `<div class="toolbar"><h1>Betrieb</h1></div>
-  <div class="jump">${[['sec-backup','Backup'],['sec-open','Öffnungszeiten'],['sec-special','Sondertage'],['sec-rooms','Räume'],['sec-abt','Abteilungen & Bedarf'],['sec-tpl','Schichtvorlagen'],['sec-betrieb','Stammdaten']].map(([i,l])=>`<button class="btn sm" data-a="jump" data-t="${i}">${l}</button>`).join('')}</div>
+  <div class="jump">${[['sec-backup','Backup'],['sec-open','Mittag / Abend'],['sec-special','Sondertage'],['sec-rooms','Räume'],['sec-abt','Abteilungen & Bedarf'],['sec-tpl','Schichtvorlagen'],['sec-betrieb','Stammdaten']].map(([i,l])=>`<button class="btn sm" data-a="jump" data-t="${i}">${l}</button>`).join('')}</div>
   <div class="stack">
   <section class="card" id="sec-backup"><h2>Backup</h2>
     <div class="notice ${backupDue()?'warn':m.lastBackup?'ok':''}">${m.lastBackup?`Letztes Backup: <b>${fmtTS(m.lastBackup)}</b>`:'Noch kein Backup gemacht.'}</div>
@@ -954,23 +945,22 @@ function viewSetup(){
     ${sn.length?sn.map((x,i)=>`<div class="snap"><div class="grow"><b>${fmtTS(x.ts)}</b><br><small class="muted">${esc(x.reason)} · ${(x.data.staff||[]).length} Personen · ${(x.data.shifts||[]).length} Schichten · ${(x.data.reservations||[]).length} Reservierungen</small></div><button class="btn sm" data-a="snap-restore" data-i="${i}">Wiederherstellen</button></div>`).join(''):'<div class="empty">Noch keine. Sie entsteht einmal täglich beim ersten Öffnen.</div>'}
   </section>
 
-  <section class="card" id="sec-open"><h2>Öffnungszeiten</h2>
+  <section class="card" id="sec-open"><h2>Offen zu Mittag / Abend</h2>
     <form data-form="hours">
-      <div>${WDL.map((n,i)=>{const w=S.hours.weekly[i],s1=w.slots[0]||{},s2=w.slots[1]||{};return `<div class="hrow ${w.zu?'is-zu':''}"><div class="hday">${n}</div><label class="chk"><input type="checkbox" name="zu${i}" ${w.zu?'checked':''} data-ch="zutoggle"> Ruhetag</label>
-      <div class="hslots"><span><input type="time" name="v1_${i}" value="${s1.von||''}" aria-label="${n} von"> – <input type="time" name="b1_${i}" value="${s1.bis||''}" aria-label="${n} bis"></span><span><input type="time" name="v2_${i}" value="${s2.von||''}" aria-label="${n} von (2)"> – <input type="time" name="b2_${i}" value="${s2.bis||''}" aria-label="${n} bis (2)"></span><label>Küche bis <input type="time" name="k${i}" value="${w.kueche||''}"></label></div></div>`;}).join('')}</div>
-      <p class="hint">Durchgehend geöffnet: zweites Zeitfenster leer lassen.</p>
+      <div>${WDL.map((n,i)=>{const w=S.hours.weekly[i];return `<div class="hrow"><div class="hday">${n}</div><label class="chk"><input type="checkbox" name="m${i}" ${w.m?'checked':''}> Mittag</label><label class="chk"><input type="checkbox" name="a${i}" ${w.a?'checked':''}> Abend</label></div>`;}).join('')}</div>
+      <p class="hint">Weder Mittag noch Abend bedeutet Ruhetag.</p>
       <div class="frow" style="margin-top:10px">
-        <div class="field"><label for="hs-ab">Abendgeschäft ab</label><input id="hs-ab" type="time" name="abendAb" value="${esc(b.abendAb||'16:00')}"></div>
+        <div class="field"><label for="hs-ab">Abend beginnt ab</label><input id="hs-ab" type="time" name="abendAb" value="${esc(b.abendAb||'16:00')}"></div>
         <div class="field"><label for="hs-rule">An Feiertagen</label><select id="hs-rule" name="feiertagRegel">${opt('sonntag','wie Sonntag',b.feiertagRegel)}${opt('normal','wie normaler Wochentag',b.feiertagRegel)}${opt('zu','geschlossen',b.feiertagRegel)}</select></div>
       </div>
-      <p class="hint">„Abendgeschäft ab“ bestimmt, was in der Übersicht zu Mittag und was zu Abend zählt. Das gilt für Reservierungen und Schichten.</p>
+      <p class="hint">Ab dieser Uhrzeit zählen Reservierungen zum Abend, ebenso Schichten, die dann noch laufen.</p>
       <div class="btn-row" style="margin-top:12px"><button class="btn primary">Speichern</button></div>
     </form>
   </section>
 
   <section class="card" id="sec-special"><div class="card-head"><h2>Sondertage & Betriebsurlaub</h2><span class="spacer"></span><button class="btn sm primary" data-a="special-new">+ Sondertag</button></div>
     <label class="chk" style="margin-bottom:6px"><input type="checkbox" data-ch="pastspecial" ${UI.showPastSpecial?'checked':''}> Vergangene anzeigen</label>
-    ${special.length?special.map(x=>`<button class="lrow" data-a="special-edit" data-id="${x.id}"><span class="grow"><b>${esc(x.name||(x.typ==='zu'?'Geschlossen':'Andere Zeiten'))}</b><small>${esc(rangeTxt(x.von,x.bis||x.von))} · ${x.typ==='zu'?'geschlossen':esc((x.slots||[]).map(s=>s.von+'–'+s.bis).join(' · '))}</small></span></button>`).join(''):'<div class="empty">Keine eingetragen.</div>'}
+    ${special.length?special.map(x=>`<button class="lrow" data-a="special-edit" data-id="${x.id}"><span class="grow"><b>${esc(x.name||((!x.m&&!x.a)?'Geschlossen':'Sondertag'))}</b><small>${esc(rangeTxt(x.von,x.bis||x.von))} · ${esc(slotsTxt({closed:!x.m&&!x.a,m:x.m,a:x.a,note:'geschlossen'}))}</small></span></button>`).join(''):'<div class="empty">Keine eingetragen.</div>'}
   </section>
 
   <form data-form="abt" id="f-abt" class="stack">
@@ -1012,12 +1002,12 @@ function openTplForm(id){
 }
 function openSpecialForm(id){
   const x=id?S.hours.special.find(z=>z.id===id):null, t=today();
-  const v=x||{name:'',von:t,bis:t,typ:'zu',slots:[],kueche:''}, s1=v.slots[0]||{}, s2=v.slots[1]||{};
+  const v=x||{name:'',von:t,bis:t,m:false,a:false};
   modal(x?'Sondertag ändern':'Neuer Sondertag',`<form id="f-sp" data-form="special" class="fstack"><input type="hidden" name="id" value="${x?x.id:''}">
     <div class="field"><label for="sp-n">Bezeichnung</label><input id="sp-n" name="name" value="${esc(v.name)}" placeholder="z. B. Betriebsurlaub, Hochzeit (geschlossene Gesellschaft)" autofocus></div>
     <div class="frow"><div class="field"><label for="sp-v">Von</label><input id="sp-v" type="date" name="von" value="${v.von}" required></div><div class="field"><label for="sp-b">Bis einschließlich</label><input id="sp-b" type="date" name="bis" value="${v.bis||v.von}" required></div></div>
-    <div class="field"><label for="sp-t">Art</label><select id="sp-t" name="typ">${opt('zu','Geschlossen',v.typ)}${opt('auf','Andere Öffnungszeiten',v.typ)}</select></div>
-    <div class="field"><span class="lbl">Öffnungszeiten (nur bei „andere“)</span><div class="hslots"><span><input type="time" name="v1" value="${s1.von||''}" aria-label="von"> – <input type="time" name="b1" value="${s1.bis||''}" aria-label="bis"></span><span><input type="time" name="v2" value="${s2.von||''}" aria-label="von (2)"> – <input type="time" name="b2" value="${s2.bis||''}" aria-label="bis (2)"></span><label>Küche bis <input type="time" name="k" value="${v.kueche||''}"></label></div></div>
+    <div class="field"><span class="lbl">Offen</span><div class="btn-row"><label class="chk"><input type="checkbox" name="m" ${v.m?'checked':''}> Mittag</label><label class="chk"><input type="checkbox" name="a" ${v.a?'checked':''}> Abend</label></div></div>
+    <p class="hint" style="margin:0">Nichts angehakt bedeutet geschlossen, z. B. bei Betriebsurlaub.</p>
   </form>`,`${x?`<button type="button" class="btn danger-ghost left" data-a="special-del" data-id="${x.id}">Löschen</button>`:''}<button type="button" class="btn" data-a="mclose">Abbrechen</button><button class="btn primary" form="f-sp">Speichern</button>`);
 }
 
@@ -1096,7 +1086,7 @@ function removeSample(){
 
 /* ---------- Reports ---------- */
 const PERIODS=[['thisweek','Diese Woche'],['nextweek','Nächste Woche'],['thismonth','Dieser Monat'],['nextmonth','Nächster Monat'],['custom','Eigener Zeitraum']];
-const REPTYPES=[['week','Wochenvorschau (Gäste & Personal)'],['plan','Dienstplan'],['person','Dienstplan einer Person'],['res','Reservierungen'],['open','Öffnungszeiten']];
+const REPTYPES=[['week','Wochenvorschau (Gäste & Personal)'],['plan','Dienstplan'],['person','Dienstplan einer Person'],['res','Reservierungen'],['open','Offen Mittag / Abend']];
 function periodRange(p){
   const t=today(), m=monday(t), d=P(t);
   switch(p){
@@ -1180,11 +1170,12 @@ function repRes(from,to){
   return {title:'Reservierungen',sub:rangeTxt(from,to),html,text};
 }
 function repOpen(from,to){
-  let html=`<table class="rep-tbl"><tbody>${WDL.map((n,i)=>{const w=S.hours.weekly[i];return `<tr class="${w.zu?'closed':''}"><th style="width:120px">${n}</th><td>${w.zu?'Ruhetag':esc(w.slots.filter(s=>s.von&&s.bis).map(s=>s.von+'–'+s.bis).join(' und '))}</td><td>${!w.zu&&w.kueche?'Küche bis '+esc(w.kueche):''}</td></tr>`;}).join('')}</tbody></table>`;
-  let text=`*Öffnungszeiten ${S.betrieb.name}*\n`+WDL.map((n,i)=>{const w=S.hours.weekly[i];return `${n}: ${w.zu?'Ruhetag':w.slots.filter(s=>s.von&&s.bis).map(s=>s.von+'–'+s.bis).join(' & ')}${!w.zu&&w.kueche?' (Küche bis '+w.kueche+')':''}`;}).join('\n');
+  const wtxt=w=>slotsTxt({closed:!w.m&&!w.a,m:w.m,a:w.a,note:'Ruhetag'});
+  let html=`<table class="rep-tbl"><thead><tr><th style="width:120px"></th><th>Mittag</th><th>Abend</th></tr></thead><tbody>${WDL.map((n,i)=>{const w=S.hours.weekly[i];return `<tr class="${!w.m&&!w.a?'closed':''}"><th>${n}</th><td>${w.m?'offen':'–'}</td><td>${w.a?'offen':'–'}</td></tr>`;}).join('')}</tbody></table>`;
+  let text=`*Geöffnet ${S.betrieb.name}*\n`+WDL.map((n,i)=>`${n}: ${wtxt(S.hours.weekly[i])}`).join('\n');
   const ex=[]; days(from,to).forEach(d=>{const sp=S.hours.special.find(x=>d>=x.von&&d<=(x.bis||x.von)),ho=holidayObj(d);if(sp||(ho&&ho.frei))ex.push({d,why:sp?(sp.name||''):ho.n,txt:slotsTxt(openInfo(d))});});
   if(ex.length){html+=`<h2>Abweichungen ${esc(rangeTxt(from,to))}</h2><table class="rep-tbl"><tbody>${ex.map(e=>`<tr><th style="width:120px">${esc(fmtDay(e.d))}</th><td>${esc(e.why)}</td><td>${esc(e.txt)}</td></tr>`).join('')}</tbody></table>`;text+=`\n\n*Abweichungen*\n`+ex.map(e=>`${fmtDay(e.d)} ${e.why}: ${e.txt}`).join('\n');}
-  return {title:'Öffnungszeiten',sub:ex.length?'inkl. Abweichungen '+rangeTxt(from,to):'',html,text};
+  return {title:'Geöffnet Mittag / Abend',sub:ex.length?'inkl. Abweichungen '+rangeTxt(from,to):'',html,text};
 }
 function repDoc(rep){
   const b=S.betrieb;
@@ -1401,16 +1392,14 @@ const FORMS={
   },
   special:f=>{
     const v=fd(f); let von=v.von,bis=v.bis||v.von; if(bis<von)[von,bis]=[bis,von];
-    const slots=[{von:v.v1,bis:v.b1},{von:v.v2,bis:v.b2}].filter(s=>s.von&&s.bis);
-    if(v.typ==='auf'&&!slots.length){toast('Bitte mindestens ein Zeitfenster angeben',{err:true});return;}
-    const data={name:(v.name||'').trim(),von,bis,typ:v.typ,slots:v.typ==='auf'?slots:[],kueche:v.typ==='auf'?(v.k||''):''};
+    const data={name:(v.name||'').trim(),von,bis,m:!!v.m,a:!!v.a};
     commit('Gespeichert',()=>{if(v.id)Object.assign(S.hours.special.find(x=>x.id===v.id),data);else S.hours.special.push({id:uid(),...data});});
     closeModal();
   },
   hours:f=>{
     const v=fd(f);
-    commit('Öffnungszeiten gespeichert',()=>{
-      S.hours.weekly=WDL.map((_,i)=>({zu:!!v['zu'+i],slots:[{von:v['v1_'+i],bis:v['b1_'+i]},{von:v['v2_'+i],bis:v['b2_'+i]}].filter(s=>s.von&&s.bis),kueche:v['k'+i]||''}));
+    commit('Gespeichert',()=>{
+      S.hours.weekly=WDL.map((_,i)=>({m:!!v['m'+i],a:!!v['a'+i]}));
       S.betrieb.feiertagRegel=v.feiertagRegel; S.betrieb.abendAb=v.abendAb||'16:00';
     });
   },
@@ -1442,7 +1431,6 @@ const CH={
   tplfill:el=>{const t=tplById(el.value),f=el.form;if(!t)return;f.von.value=t.von;f.bis.value=t.bis;f.abt.value=t.abt;},
   shiftstaff:el=>{const s=staffById(el.value);if(s&&!el.form.tpl.value)el.form.abt.value=s.abt;},
   resdt:()=>updResWarn(),
-  zutoggle:el=>el.closest('.hrow').classList.toggle('is-zu',el.checked),
   pastabs:el=>{UI.showPastAbs=el.checked;render();},
   pastspecial:el=>{UI.showPastSpecial=el.checked;render();},
   erwartet:el=>{const n=Math.max(0,parseInt(el.value,10)||0);commit(null,()=>{if(n)S.erwartet[el.dataset.key]=n;else delete S.erwartet[el.dataset.key];});}

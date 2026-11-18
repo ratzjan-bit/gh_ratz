@@ -21,7 +21,7 @@ Für die Fragen, die sich jede Woche stellen:
 - **Personal:** Name, Abteilung, Fix oder Springer, Telefon. Dazu Urlaub und Abwesenheiten.
 - **Reports:** Wochenvorschau, Dienstplan (für alle oder eine Person), Reservierungen und Öffnungszeiten.
   Ausgabe als PDF (über Drucken), per WhatsApp, über Teilen oder als kopierter Text.
-- **Betrieb:** Öffnungszeiten, Sondertage und Betriebsurlaub, österreichische Feiertage, Räume, Abteilungen mit Faustregel, Schichtvorlagen und Backup.
+- **Betrieb:** pro Wochentag Mittag und/oder Abend offen, Sondertage und Betriebsurlaub, österreichische Feiertage, Räume, Abteilungen mit Faustregel, Schichtvorlagen und Backup.
 
 ## Daten & Backup
 
