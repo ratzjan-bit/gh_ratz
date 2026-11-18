@@ -38,3 +38,7 @@ Zusätzlich legt das Tool einmal täglich eine automatische Sicherung auf dem Ge
 
 Am besten über eine feste Adresse, zum Beispiel GitHub Pages: Im Repo unter Settings → Pages den Branch `main` mit dem Ordner `/ (root)` wählen.
 Danach die Seite am Handy öffnen und mit „Zum Home-Bildschirm“ wie eine App ablegen.
+
+## Ideen & offene Punkte
+
+Siehe [BACKLOG.md](BACKLOG.md).
