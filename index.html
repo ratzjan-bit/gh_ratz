@@ -253,7 +253,7 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 .erow input.inp{flex:1;min-width:120px;width:auto}
 .erow .mini{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
 .erow .mini input{width:58px;border:1px solid var(--line);border-radius:7px;padding:5px 6px;background:var(--surface);min-height:36px;font-size:15px;text-align:right}
-.erow .mini input[type="date"]{width:136px;min-width:0;text-align:left;font-size:14px}
+.erow .mini select{border:1px solid var(--line);border-radius:7px;padding:5px 4px;background:var(--surface);min-height:36px;font-size:15px;max-width:9.5em}
 .erow .mini.season{flex-wrap:wrap;max-width:100%}
 .snap{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .snap:last-child{border-bottom:0}
@@ -544,6 +544,16 @@ const roomDefault=(d,r)=>inSeason(d,r)&&!!r.standard;
 function roomOpen(d,k,r){const st=S.raumStatus[d+'|'+k];return st&&st[r.id]!==undefined?st[r.id]:roomDefault(d,r);}
 const MONATE=['Jänner','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const mdTxt=md=>{const [m,d]=md.split('-').map(Number);return `${d}. ${MONATE[m-1]}`;};
+/* Tag + Monat ohne Jahr (Saison wiederholt sich jährlich) */
+function mdPick(name,md,lbl){
+  const [m,d]=md?md.split('-').map(Number):[0,0];
+  return `<select name="${name}_d" aria-label="Saison ${lbl} Tag">${opt('','–',d||'')}${Array.from({length:31},(_,i)=>opt(i+1,(i+1)+'.',d||'')).join('')}</select><select name="${name}_m" aria-label="Saison ${lbl} Monat">${opt('','– ganzjährig –',m||'')}${MONATE.map((n,i)=>opt(i+1,n,m||'')).join('')}</select>`;
+}
+function mdRead(v,name){
+  const m=+v[name+'_m'], d=+v[name+'_d']||1; if(!m) return '';
+  const max=[31,29,31,30,31,30,31,31,30,31,30,31][m-1];
+  return `${pad(m)}-${pad(Math.min(d,max))}`;
+}
 const seasonTxt=r=>r.saisonVon&&r.saisonBis?`${mdTxt(r.saisonVon)} – ${mdTxt(r.saisonBis)}`:'ganzjährig';
 function bedarf(a,g){const n=a.jeGaeste>0?Math.ceil(g/a.jeGaeste):0;const v=Math.max(n,+a.min||0);return (a.jeGaeste>0||a.min>0)?v:null;}
 
@@ -965,8 +975,8 @@ function viewSetup(){
 
   <form data-form="abt" id="f-abt" class="stack">
   <section class="card" id="sec-rooms"><h2>Räume</h2>
-    <p class="hint" style="margin-top:0">„normal offen“: So startet der Raum in der Übersicht. Pro Tag und Dienst schaltest du ihn dort per Tipp auf oder zu.<br><b>Saison:</b> Außerhalb dieses Zeitraums ist der Raum zu und erscheint nicht in der Übersicht. Der Zeitraum gilt jedes Jahr, das Jahr im Datum spielt keine Rolle. Leer bedeutet ganzjährig.</p>
-    ${S.raeume.map(r=>`<div class="erow"><input class="inp" name="rn_${r.id}" value="${esc(r.name)}" required aria-label="Raum"><span class="mini"><input type="number" min="0" name="rp_${r.id}" value="${esc(r.plaetze||'')}" aria-label="Plätze"> Plätze</span><label class="chk"><input type="checkbox" name="rs_${r.id}" ${r.standard?'checked':''}> normal offen</label><span class="mini season">Saison <input type="date" name="rsv_${r.id}" value="${r.saisonVon?P(today()).getFullYear()+'-'+r.saisonVon:''}" aria-label="Saison von"> – <input type="date" name="rsb_${r.id}" value="${r.saisonBis?P(today()).getFullYear()+'-'+r.saisonBis:''}" aria-label="Saison bis"></span>${r.saisonVon?`<small class="muted">${esc(seasonTxt(r))}</small>`:''}<button type="button" class="btn sm danger-ghost" data-a="raum-del" data-id="${r.id}">Entfernen</button></div>`).join('')}
+    <p class="hint" style="margin-top:0">„normal offen“: So startet der Raum in der Übersicht. Pro Tag und Dienst schaltest du ihn dort per Tipp auf oder zu.<br><b>Saison:</b> Außerhalb dieses Zeitraums ist der Raum zu und erscheint nicht in der Übersicht. Die Saison wiederholt sich jedes Jahr automatisch und darf über den Jahreswechsel gehen, z. B. 1. Oktober bis 30. April. Ohne Monat gilt der Raum ganzjährig.</p>
+    ${S.raeume.map(r=>`<div class="erow"><input class="inp" name="rn_${r.id}" value="${esc(r.name)}" required aria-label="Raum"><span class="mini"><input type="number" min="0" name="rp_${r.id}" value="${esc(r.plaetze||'')}" aria-label="Plätze"> Plätze</span><label class="chk"><input type="checkbox" name="rs_${r.id}" ${r.standard?'checked':''}> normal offen</label><span class="mini season">Saison ${mdPick('rsv_'+r.id,r.saisonVon,'von')} bis ${mdPick('rsb_'+r.id,r.saisonBis,'bis')} <small>jedes Jahr</small></span><button type="button" class="btn sm danger-ghost" data-a="raum-del" data-id="${r.id}">Entfernen</button></div>`).join('')}
     <div class="btn-row" style="margin-top:8px"><button type="button" class="btn sm ghost" data-a="raum-add">+ Raum</button><span class="spacer"></span><button class="btn primary">Speichern</button></div>
   </section>
   <section class="card" id="sec-abt"><h2>Abteilungen & Personalbedarf</h2>
@@ -1346,7 +1356,7 @@ function applyAbtForm(){
   const f=$('#f-abt'); if(!f) return; const v=fd(f);
   S.abteilungen.forEach(a=>{if(v['an_'+a.id]!==undefined){a.name=v['an_'+a.id].trim()||a.name;a.farbe=col(v['ac_'+a.id]);a.jeGaeste=Math.max(0,+v['aj_'+a.id]||0);a.min=Math.max(0,+v['am_'+a.id]||0);}});
   S.raeume.forEach(r=>{if(v['rn_'+r.id]!==undefined){r.name=v['rn_'+r.id].trim()||r.name;r.plaetze=+v['rp_'+r.id]||0;r.standard=!!v['rs_'+r.id];
-    const a=(v['rsv_'+r.id]||'').slice(5), b=(v['rsb_'+r.id]||'').slice(5);
+    const a=mdRead(v,'rsv_'+r.id), b=mdRead(v,'rsb_'+r.id);
     if(a&&b){r.saisonVon=a;r.saisonBis=b;} else {r.saisonVon='';r.saisonBis='';}}});
 }
 const FORMS={
