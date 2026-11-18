@@ -330,6 +330,7 @@ textarea.code{width:100%;min-height:160px;font:12px/1.4 ui-monospace,Menlo,Conso
 const APP_ID='gasthof-ratz-planer', VERSION=2;
 const KEY='gasthofRatz.data.v1', SNAP_KEY='gasthofRatz.snapshots.v1', UI_KEY='gasthofRatz.ui.v2';
 const MAX_SNAPS=8;
+const ART=!!window.ARTIFACT_MODE;   // Testversion als Claude-Artifact: kein Drucken/Download/Teilen möglich
 
 /* ---------- Helfer ---------- */
 const $=(s,r=document)=>r.querySelector(s);
@@ -654,6 +655,7 @@ function viewWelcome(){
     <div class="crest">R</div>
     <h1>Planer Gasthof Ratz</h1>
     <p>Hier siehst du auf einen Blick, wie viele Gäste mittags und abends kommen, welche Räume aufmachen und ob genug Personal eingeteilt ist. Die Daten bleiben auf diesem Gerät. Mit Backups sicherst du sie und kannst sie wieder einspielen.</p>
+    ${ART?'<div class="notice warn"><b>Testversion.</b> Alles, was du hier einträgst, bleibt nur in diesem Browser. Backups gehen hier als Text: Betrieb → Backup.</div>':''}
     ${storageOK?'':'<div class="notice err">Der Browser erlaubt hier keinen lokalen Speicher (privater Modus?). Daten gehen beim Schließen verloren.</div>'}
     <div class="fstack" style="margin-top:16px">
       <button class="btn primary" data-a="start-sample">Mit Beispieldaten ausprobieren</button>
@@ -920,7 +922,7 @@ function viewSetup(){
   <div class="stack">
   <section class="card" id="sec-backup"><h2>Backup</h2>
     <div class="notice ${backupDue()?'warn':m.lastBackup?'ok':''}">${m.lastBackup?`Letztes Backup: <b>${fmtTS(m.lastBackup)}</b>`:'Noch kein Backup gemacht.'}</div>
-    <p class="hint">Die Daten liegen nur in diesem Browser auf diesem Gerät. Lade deshalb etwa einmal pro Woche ein Backup herunter oder schick es dir per „Teilen“ selbst, z. B. per Mail.</p>
+    ${ART?'<div class="notice warn">Testversion: Dateien herunterladen ist hier gesperrt. „Backup herunterladen“ zeigt deshalb das Backup als Text zum Kopieren. Einspielen geht per Datei oder Text.</div>':''}<p class="hint">Die Daten liegen nur in diesem Browser auf diesem Gerät. Lade deshalb etwa einmal pro Woche ein Backup herunter oder schick es dir per „Teilen“ selbst, z. B. per Mail.</p>
     <div class="btn-row" style="margin-top:10px"><button class="btn primary" data-a="backup-dl">Backup herunterladen</button><button class="btn" data-a="backup-share">Backup teilen / senden</button></div>
     <h3>Wiederherstellen</h3>
     <div class="btn-row"><button class="btn" data-a="import">Backup-Datei einspielen…</button><button class="btn ghost" data-a="import-text">Backup-Text einfügen…</button><button class="btn ghost" data-a="backup-text">Backup als Text…</button></div>
@@ -1000,8 +1002,8 @@ function openSpecialForm(id){
 function backupName(){const d=new Date();return `GasthofRatz_Backup_${iso(d)}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;}
 function backupJSON(data=S){return JSON.stringify({app:APP_ID,version:VERSION,exported:new Date().toISOString(),data},null,1);}
 function markBackup(){S.meta.lastBackup=Date.now();writeData();render();}
-function backupDownload(){download(backupName(),backupJSON(),'application/json');markBackup();toast('Backup gespeichert (Ordner „Downloads“)');}
-async function backupShare(){
+function backupDownload(){if(ART){ACT['backup-text']();return;}download(backupName(),backupJSON(),'application/json');markBackup();toast('Backup gespeichert (Ordner „Downloads“)');}
+async function backupShare(){if(ART){ACT['backup-text']();return;}
   try{
     const file=new File([backupJSON()],backupName(),{type:'application/json'});
     if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Backup '+S.betrieb.name});markBackup();toast('Backup geteilt');return;}
@@ -1207,12 +1209,12 @@ function viewReports(){
     ${r.type==='person'?`<div class="field" style="margin-top:10px"><label for="rp-staff">Mitarbeiter</label><select id="rp-staff" name="staff" data-ch="rep">${staffOptions(r.staff,false,true)}</select></div>`:''}
   </section>
   <div class="repactions">
-    <button class="btn primary" data-a="rep-print">Drucken / PDF</button>
-    <button class="btn" data-a="rep-wa">WhatsApp${rep.phone?' an '+esc(firstName(rep.person.name)):''}</button>
+    ${ART?'':'<button class="btn primary" data-a="rep-print">Drucken / PDF</button>'}
+    <a class="btn${ART?' primary':''}" href="https://wa.me/${phoneIntl(rep.phone)}?text=${encodeURIComponent(rep.text)}" target="_blank" rel="noopener">WhatsApp${rep.phone?' an '+esc(firstName(rep.person.name)):''}</a>
     <button class="btn" data-a="rep-share">Teilen</button>
     <button class="btn" data-a="rep-copy">Text kopieren</button>
   </div>
-  <p class="hint" style="margin:-4px 0 10px">PDF: Bei „Drucken“ als Drucker „Als PDF speichern“ wählen. WhatsApp, Teilen und Kopieren schicken den Report als Text.</p>
+  <p class="hint" style="margin:-4px 0 10px">${ART?'Testversion: Drucken/PDF gibt es nur in der richtigen Datei am Handy. ':''}PDF: Bei „Drucken“ als Drucker „Als PDF speichern“ wählen. WhatsApp, Teilen und Kopieren schicken den Report als Text.</p>
   <div class="paper">${repDoc(rep)}</div>`;
 }
 function repPrint(){
@@ -1323,7 +1325,6 @@ const ACT={
   'rep-print':()=>repPrint(),
   'rep-share':()=>{const r=buildReport();shareText(`${r.title} – ${S.betrieb.name}`,r.text);},
   'rep-copy':()=>copyText(buildReport().text),
-  'rep-wa':()=>{const r=buildReport();window.open(`https://wa.me/${phoneIntl(r.phone)}?text=${encodeURIComponent(r.text)}`,'_blank','noopener');}
 };
 
 /* ---------- Formulare ---------- */
