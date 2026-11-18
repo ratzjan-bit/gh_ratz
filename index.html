@@ -177,6 +177,11 @@ button.lrow:hover{background:var(--surface-2)}
 .staffline{display:flex;flex-wrap:wrap;gap:6px 14px}
 .sl{display:inline-flex;align-items:center;gap:5px;font-size:14px;font-variant-numeric:tabular-nums}
 .sl b{font-size:15px}
+button.sl{background:none;border:1px solid transparent;border-radius:8px;padding:2px 6px;margin:-2px -6px;cursor:pointer;color:var(--ink)}
+button.sl:hover{border-color:var(--line)}
+.sl.off{color:var(--muted);border-style:dashed;border-color:var(--line)}
+.sl.off .dot{opacity:.4}
+.sl.off i{font-style:normal;font-size:12.5px}
 .sl.short b{color:var(--danger)}
 .names{font-size:12.5px;color:var(--muted);margin-top:3px}
 .reslist{margin-top:10px;font-size:13px;border-top:1px dashed var(--line);padding-top:6px}
@@ -416,6 +421,7 @@ function defaults(){
       special:[]},
     staff:[],absences:[],shifts:[],reservations:[],
     raumStatus:{},   // "YYYY-MM-DD|M" -> {raumId:true/false}  (nur Abweichungen vom Standard)
+    abtAus:{},       // "YYYY-MM-DD|M" -> {abteilungId:true}  (Abteilung in diesem Dienst nicht nötig, z. B. keine Küche)
     erwartet:{},     // "YYYY-MM-DD|A" -> geschätzte Laufkundschaft
     meta:{created:Date.now(),lastChange:0,lastBackup:0}
   };
@@ -427,7 +433,7 @@ function migrate(d){
   o.betrieb=Object.assign({},def.betrieb,d.betrieb||{});
   o.meta=Object.assign({},def.meta,d.meta||{});
   for(const k of ['staff','absences','shifts','reservations','templates','abteilungen','raeume']) if(!Array.isArray(o[k])) o[k]=def[k];
-  for(const k of ['raumStatus','erwartet']) if(!o[k]||typeof o[k]!=='object'||Array.isArray(o[k])) o[k]={};
+  for(const k of ['raumStatus','erwartet','abtAus']) if(!o[k]||typeof o[k]!=='object'||Array.isArray(o[k])) o[k]={};
   // Öffnung nur noch als Mittag/Abend (ältere Daten mit Uhrzeiten werden umgerechnet)
   const sp=tmin(o.betrieb.abendAb||'16:00');
   const toMA=(zu,slots)=>{if(zu)return {m:false,a:false};const sl=(slots||[]).filter(x=>x.von&&x.bis);if(!sl.length)return {m:true,a:true};return {m:sl.some(x=>span(x.von,x.bis)[0]<sp),a:sl.some(x=>span(x.von,x.bis)[1]>sp)};};
@@ -584,7 +590,9 @@ function svcInfo(d,k){
   const depts=S.abteilungen.map(a=>{
     const sh=shifts.filter(x=>x.abt===a.id).sort(byTime);
     const ids=[...new Set(sh.map(x=>x.staff))];
-    return {a,n:ids.length,need:bedarf(a,gaeste),list:sh.map(x=>({s:staffById(x.staff),x})).filter(z=>z.s)};
+    const off=!!(S.abtAus[d+'|'+k]||{})[a.id];
+    // Bedarf nur, wenn Gäste kommen und die Abteilung in diesem Dienst gebraucht wird
+    return {a,n:ids.length,off,need:(off||gaeste<=0)?null:bedarf(a,gaeste),list:sh.map(x=>({s:staffById(x.staff),x})).filter(z=>z.s)};
   });
   const fehlt=depts.filter(z=>z.need!==null&&z.need>z.n);
   const raumAlarm=rooms.filter(z=>!z.open&&z.pers>0);
@@ -739,7 +747,7 @@ function svcBlock(I,zeit){
     const info=(z.open?(z.r.plaetze?`${z.pers} / ${z.r.plaetze}`:`${z.pers} res.`):(z.pers?`zu · ${z.pers} res.!`:'zu'))+(z.saison?'':' · außer Saison');
     return `<button class="room ${cls} ${full?'full':''}" data-a="room" data-d="${I.d}" data-k="${I.k}" data-r="${z.r.id}" aria-pressed="${z.open}" title="Tippen: auf/zu"><b>${esc(z.r.name)}</b><small>${info}</small></button>`;
   }).join('');
-  const staff=I.depts.filter(z=>z.n||z.need).map(z=>`<span class="sl ${z.need!==null&&z.need>z.n?'short':''}"><span class="dot" style="--c:${col(z.a.farbe)}"></span>${esc(z.a.name)} <b>${z.n}</b>${z.need!==null?`<span class="muted">/${z.need}</span>`:''}</span>`).join('')||'<span class="muted" style="font-size:13px">niemand eingeteilt</span>';
+  const staff=I.depts.filter(z=>z.n||z.need||z.off).map(z=>`<button class="sl ${z.need!==null&&z.need>z.n?'short':''} ${z.off?'off':''}" data-a="abt-aus" data-d="${I.d}" data-k="${I.k}" data-abt="${z.a.id}" title="Tippen: ${esc(z.a.name)} in diesem Dienst ${z.off?'wieder einplanen':'nicht nötig'}"><span class="dot" style="--c:${col(z.a.farbe)}"></span>${esc(z.a.name)} ${z.off?'<i>nicht nötig</i>':`<b>${z.n}</b>${z.need!==null?`<span class="muted">/${z.need}</span>`:''}`}</button>`).join('')||'<span class="muted" style="font-size:13px">niemand eingeteilt</span>';
   const names=I.depts.filter(z=>z.list.length).map(z=>z.list.map(y=>`${esc(firstName(y.s.name))} ${y.x.von}`).join(', ')).join(' · ');
   const over=I.plaetze&&I.gaeste>I.plaetze;
   return `<div class="svc">
@@ -749,7 +757,7 @@ function svcBlock(I,zeit){
         <span class="split">${I.reserviert} reserviert<br>+ <input type="number" min="0" max="999" inputmode="numeric" value="${I.erwartet||''}" placeholder="0" data-ch="erwartet" data-key="${key}" aria-label="Zusätzlich erwartete Gäste"> erwartet</span></div>
       <div class="svc-side">
         <div><div class="sublbl">Räume${I.plaetze?` · ${I.plaetze} Plätze offen`:''}</div><div class="rooms">${rooms}</div>${over?`<div class="hint" style="color:var(--danger)">Mehr Gäste als Plätze in den offenen Räumen.</div>`:''}${I.ohneRaum?`<div class="hint">${I.ohneRaum} Gäste ohne Raum.</div>`:''}</div>
-        <div><div class="sublbl">Personal${I.depts.some(z=>z.need!==null)?' · eingeteilt / Bedarf':''}</div><div class="staffline">${staff}</div>${names?`<div class="names">${names}</div>`:''}</div>
+        <div><div class="sublbl">Personal${I.depts.some(z=>z.need!==null)?' · eingeteilt / Bedarf':''}${I.depts.some(z=>z.need!==null||z.off)?' · tippen = nicht nötig':''}</div><div class="staffline">${staff}</div>${names?`<div class="names">${names}</div>`:''}</div>
       </div>
     </div>
     <div class="btn-row" style="margin-top:10px">${I.fehlt.length?`<button class="btn sm warn" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="${I.fehlt[0].a.id}">Wer hat Zeit?</button>`:`<button class="btn sm ghost" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="">Wer hat Zeit?</button>`}<button class="btn sm ghost" data-a="res-new" data-d="${I.d}" data-z="${I.k==='M'?'12:00':'18:30'}">+ Reservierung</button></div>
@@ -1144,9 +1152,9 @@ function repWeek(from,to){
     for(const s of servicesOf(d)){
       const I=svcInfo(d,s.k);
       const rooms=I.rooms.filter(z=>z.open).map(z=>z.r.name+(z.pers?` (${z.pers})`:'')).join(', ')||'–';
-      const staff=I.depts.filter(z=>z.list.length||z.need).map(z=>`<b>${esc(z.a.name)}</b> ${z.n}${z.need!==null?'/'+z.need:''}: ${z.list.map(y=>esc(firstName(y.s.name))+' '+y.x.von).join(', ')||'–'}${z.need!==null&&z.need>z.n?` <em>${z.need-z.n} fehlt</em>`:''}`).join('<br>');
+      const staff=I.depts.filter(z=>z.list.length||z.need||z.off).map(z=>z.off?`<b>${esc(z.a.name)}</b>: nicht nötig`:`<b>${esc(z.a.name)}</b> ${z.n}${z.need!==null?'/'+z.need:''}: ${z.list.map(y=>esc(firstName(y.s.name))+' '+y.x.von).join(', ')||'–'}${z.need!==null&&z.need>z.n?` <em>${z.need-z.n} fehlt</em>`:''}`).join('<br>');
       html+=`<tr><th>${SVC[s.k]}<small>${esc(s.zeit)}</small></th><td class="r"><b>${I.gaeste}</b>${I.erwartet?`<small>${I.reserviert} res. + ${I.erwartet}</small>`:''}</td><td>${esc(rooms)}</td><td>${staff||'–'}</td></tr>`;
-      text+=`${SVC[s.k]}: ${I.gaeste} Gäste · Räume: ${rooms}\n`+I.depts.filter(z=>z.list.length||z.need).map(z=>`  ${z.a.name}: ${z.list.map(y=>firstName(y.s.name)+' '+y.x.von).join(', ')||'–'}${z.need!==null&&z.need>z.n?` (${z.need-z.n} fehlt!)`:''}`).join('\n')+'\n';
+      text+=`${SVC[s.k]}: ${I.gaeste} Gäste · Räume: ${rooms}\n`+I.depts.filter(z=>z.list.length||z.need||z.off).map(z=>z.off?`  ${z.a.name}: nicht nötig`:`  ${z.a.name}: ${z.list.map(y=>firstName(y.s.name)+' '+y.x.von).join(', ')||'–'}${z.need!==null&&z.need>z.n?` (${z.need-z.n} fehlt!)`:''}`).join('\n')+'\n';
     }
     html+=`</tbody></table></section>`;
   }
@@ -1302,6 +1310,11 @@ const ACT={
     toast(`${r.name} am ${fmtDay(d.d)} ${SVCADV[d.k]}: ${now?'zu':'offen'}`,{undo:true});
   },
   who:d=>openWho(d.d,d.k,d.abt||''),
+  'abt-aus':d=>{
+    const key=d.d+'|'+d.k, a=dept(d.abt), now=!!(S.abtAus[key]||{})[d.abt];
+    commit(null,()=>{const st=S.abtAus[key]=S.abtAus[key]||{}; if(now) delete st[d.abt]; else st[d.abt]=true; if(!Object.keys(st).length) delete S.abtAus[key];});
+    toast(`${a.name} am ${fmtDay(d.d)} ${SVCADV[d.k]}: ${now?'wieder eingeplant':'nicht nötig'}`,{undo:true});
+  },
   'who-assign':d=>openShiftForm({sid:d.s,d:d.d,tpl:d.t}),
 
   // Dienstplan
