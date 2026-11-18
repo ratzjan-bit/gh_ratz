@@ -246,6 +246,10 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 .res-pax{text-align:right;font-family:var(--font-display);font-size:19px;font-weight:600;line-height:1.1}
 .res-pax small{display:block;font-family:var(--font-body);font-size:11px;color:var(--muted);font-weight:500}
 .search{flex:1;min-width:160px}
+.tagchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
+.tagchips button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--ink)}
+.tagchips button:hover{border-color:var(--accent)}
+.res-main .kom{color:var(--brass);font-weight:600}
 
 /* Betrieb */
 .jump{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 14px}
@@ -767,7 +771,7 @@ function svcBlock(I,zeit){
       </div>
     </div>
     <div class="btn-row" style="margin-top:10px">${I.fehlt.length?`<button class="btn sm warn" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="${I.fehlt[0].a.id}">Wer hat Zeit?</button>`:`<button class="btn sm ghost" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="">Wer hat Zeit?</button>`}<button class="btn sm ghost" data-a="res-new" data-d="${I.d}" data-z="${I.k==='M'?'12:00':'18:30'}">+ Reservierung</button></div>
-    ${I.res.length?`<div class="reslist">${I.res.map(r=>`<button data-a="res-edit" data-id="${r.id}"><span class="t">${esc(r.zeit)}</span><span class="n">${esc(r.name)}</span><span class="r">${esc(r.personen)} P.${raumById(r.raum)?' · '+esc(raumById(r.raum).name):''}</span></button>`).join('')}</div>`:''}
+    ${I.res.length?`<div class="reslist">${I.res.map(r=>`<button data-a="res-edit" data-id="${r.id}"><span class="t">${esc(r.zeit)}</span><span class="n">${esc(r.name)}${r.kommentar?` <span style="color:var(--brass)">· ${esc(r.kommentar)}</span>`:''}</span><span class="r">${esc(r.personen)} P.${raumById(r.raum)?' · '+esc(raumById(r.raum).name):''}</span></button>`).join('')}</div>`:''}
   </div>`;
 }
 /* Wer hat Zeit? – freie Leute einer Abteilung für einen Dienst */
@@ -926,25 +930,58 @@ function viewRes(){
   const t=today(), q=UI.resQ.trim().toLowerCase();
   let list=S.reservations.slice();
   if(UI.resFilter==='kommend') list=list.filter(r=>r.datum>=t); else if(UI.resFilter==='vergangen') list=list.filter(r=>r.datum<t);
-  if(q) list=list.filter(r=>(r.name||'').toLowerCase().includes(q));
+  if(q) list=list.filter(r=>((r.name||'')+' '+(r.kommentar||'')).toLowerCase().includes(q));
   list.sort(byTime); const by={}; list.forEach(r=>{(by[r.datum]=by[r.datum]||[]).push(r);});
   let keys=Object.keys(by).sort(); if(UI.resFilter==='vergangen') keys.reverse();
   return `<div class="toolbar"><h1>Reservierungen</h1><span class="spacer"></span><button class="btn primary" data-a="res-new">+ Reservierung</button></div>
-  <div class="toolbar"><div class="chips">${[['kommend','Kommend'],['vergangen','Vergangen'],['alle','Alle']].map(([k,l])=>`<button data-a="resfilter" data-v="${k}" aria-pressed="${UI.resFilter===k}">${l}</button>`).join('')}</div><input class="inp search" type="search" placeholder="Name suchen" value="${esc(UI.resQ)}" data-in="resq" id="resq" aria-label="Name suchen"></div>
+  <div class="toolbar"><div class="chips">${[['kommend','Kommend'],['vergangen','Vergangen'],['alle','Alle']].map(([k,l])=>`<button data-a="resfilter" data-v="${k}" aria-pressed="${UI.resFilter===k}">${l}</button>`).join('')}</div><input class="inp search" type="search" placeholder="Name oder Kommentar suchen" value="${esc(UI.resQ)}" data-in="resq" id="resq" aria-label="Name oder Kommentar suchen"></div>
   <div class="stack">${keys.length?keys.map(d=>{const arr=by[d],o=openInfo(d);const m=sum(arr.filter(r=>svcOfTime(r.zeit)==='M'),r=>r.personen),a=sum(arr.filter(r=>svcOfTime(r.zeit)==='A'),r=>r.personen);
     return `<section class="card day"><header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''}<small>${o.closed?`<span style="color:var(--danger)">${esc(o.note||'geschlossen')}</span>`:`Mittag ${m} · Abend ${a} Gäste`}</small></div><button class="btn sm" data-a="res-new" data-d="${d}" aria-label="Reservierung für diesen Tag">+</button></header>
-    ${arr.map(r=>{const rm=raumById(r.raum);return `<button class="res-item" data-a="res-edit" data-id="${r.id}"><span class="res-time">${esc(r.zeit)}</span><span class="res-main"><b>${esc(r.name)}</b><small>${rm?esc(rm.name):'kein Raum'}${rm&&!roomOpen(d,svcOfTime(r.zeit),rm)?' · <span style="color:var(--warn)">Raum ist zu</span>':''}</small></span><span class="res-pax">${esc(r.personen)}<small>Pers.</small></span></button>`;}).join('')}</section>`;}).join('')
+    ${arr.map(r=>{const rm=raumById(r.raum);return `<button class="res-item" data-a="res-edit" data-id="${r.id}"><span class="res-time">${esc(r.zeit)}</span><span class="res-main"><b>${esc(r.name)}</b>${r.kommentar?`<small class="kom">${esc(r.kommentar)}</small>`:''}<small>${r.serie?'↻ Serie · ':''}${rm?esc(rm.name):'kein Raum'}${rm&&!roomOpen(d,svcOfTime(r.zeit),rm)?' · <span style="color:var(--warn)">Raum ist zu</span>':''}</small></span><span class="res-pax">${esc(r.personen)}<small>Pers.</small></span></button>`;}).join('')}</section>`;}).join('')
     :`<section class="card"><div class="empty">${q?'Keine Treffer.':'Keine Reservierungen in dieser Ansicht.'}</div></section>`}</div>`;
+}
+const RES_TAGS=['Geburtstagsfeier','Steakessen','Stammtisch','Sitzung','Firmenfeier','Weihnachtsfeier','Taufe','Hochzeit','Trauerfeier','Kartenrunde'];
+function resTags(){
+  // Standard-Schlagworte + bereits verwendete (häufigste zuerst)
+  const cnt={};
+  S.reservations.forEach(r=>(r.kommentar||'').split(',').map(x=>x.trim()).filter(x=>x&&x.length<=30).forEach(x=>{cnt[x]=(cnt[x]||0)+1;}));
+  const used=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]);
+  return [...new Set([...RES_TAGS,...used])].slice(0,16);
+}
+/* Raum einer Reservierung für ihren Dienst öffnen */
+function openRoom(r){const rm=raumById(r.raum),k=svcOfTime(r.zeit);if(rm&&!roomOpen(r.datum,k,rm)){const key=r.datum+'|'+k;const st=S.raumStatus[key]=S.raumStatus[key]||{};if(roomDefault(r.datum,rm))delete st[rm.id];else st[rm.id]=true;if(!Object.keys(st).length)delete S.raumStatus[key];}}
+/* Wiederholung */
+const nthOf=d=>{const x=P(d),last=P(addD(d,7)).getMonth()!==x.getMonth();return last&&Math.ceil(x.getDate()/7)>=4?0:Math.ceil(x.getDate()/7);}; // 0 = letzter
+const nthTxt=d=>{const n=nthOf(d);return `jeden ${n?n+'.':'letzten'} ${WDL[wd(d)]} im Monat`;};
+function seriesDates(start,mode,until){
+  const out=[]; if(!mode||!until||until<start) return [start];
+  if(mode==='w1'||mode==='w2'){const step=mode==='w1'?7:14;for(let d=start;d<=until&&out.length<120;d=addD(d,step))out.push(d);return out;}
+  const w=wd(start), n=nthOf(start), s0=P(start);
+  for(let i=0;i<36&&out.length<60;i++){
+    const y=s0.getFullYear(), m=s0.getMonth()+i;
+    let d;
+    if(n){const first=new Date(y,m,1);const off=(w-((first.getDay()+6)%7)+7)%7;const day=1+off+(n-1)*7;const x=new Date(y,m,day);if(x.getMonth()!==((m%12)+12)%12)continue;d=iso(x);}
+    else{const lastD=new Date(y,m+1,0);const off=(((lastD.getDay()+6)%7)-w+7)%7;d=iso(new Date(y,m+1,-off));}
+    if(d>until) break; if(d>=start) out.push(d);
+  }
+  return out;
 }
 function openResForm({id,d,z}){
   const r=id?S.reservations.find(x=>x.id===id):null;
-  const v=r||{datum:d||today(),zeit:z||'18:30',name:'',personen:2,raum:(S.raeume.find(x=>x.standard)||S.raeume[0]||{}).id||''};
+  const v=r||{datum:d||today(),zeit:z||'18:30',name:'',personen:2,raum:(S.raeume.find(x=>x.standard)||S.raeume[0]||{}).id||'',kommentar:''};
+  const ser=r&&r.serie?S.reservations.filter(x=>x.serie===r.serie).sort(byTime):[];
   const body=`<form id="f-res" data-form="res" class="fstack"><input type="hidden" name="id" value="${r?r.id:''}">
     <div class="field"><label for="rs-n">Name</label><input id="rs-n" name="name" value="${esc(v.name)}" required autofocus placeholder="z. B. Familie Berger"></div>
     <div class="frow"><div class="field"><label for="rs-p">Personen</label><input id="rs-p" type="number" inputmode="numeric" name="personen" min="1" max="999" value="${esc(v.personen)}" required data-ch="resdt"></div>
     <div class="field"><label for="rs-d">Datum</label><input id="rs-d" type="date" name="datum" value="${v.datum}" required data-ch="resdt"></div>
     <div class="field"><label for="rs-z">Uhrzeit</label><input id="rs-z" type="time" name="zeit" value="${v.zeit}" required data-ch="resdt"></div></div>
     <div class="field"><label for="rs-r">Raum</label><select id="rs-r" name="raum" data-ch="resdt">${opt('','– noch offen –',v.raum)}${S.raeume.map(x=>opt(x.id,x.name+(x.plaetze?` (${x.plaetze} Plätze)`:'')+(x.saisonVon?` · Saison ${seasonTxt(x)}`:''),v.raum)).join('')}</select></div>
+    <div class="field"><label for="rs-k">Kommentar</label><input id="rs-k" name="kommentar" value="${esc(v.kommentar||'')}" placeholder="z. B. Geburtstagsfeier, Steakessen" maxlength="200"></div>
+    <div class="tagchips">${resTags().map(t=>`<button type="button" data-a="res-tag" data-t="${esc(t)}">${esc(t)}</button>`).join('')}</div>
+    ${r?(ser.length>1?`<div class="notice">Teil einer Serie: ${ser.length} Termine, ${esc(fmtDate(ser[0].datum))} bis ${esc(fmtDate(ser[ser.length-1].datum))}.</div>`:''):`
+    <div class="frow"><div class="field"><label for="rs-w">Wiederholen</label><select id="rs-w" name="wdh" data-ch="resdt">${opt('','Nicht wiederholen','')}${opt('w1','Jede Woche','')}${opt('w2','Alle 2 Wochen','')}${opt('m','Jeden Monat','')}</select></div>
+    <div class="field" id="rs-wb-f" hidden><label for="rs-wb">Bis</label><input id="rs-wb" type="date" name="wdhBis" value="${addD(v.datum,182)}" data-ch="resdt"></div></div>
+    <p class="hint" id="wdh-info" style="margin:0"></p>`}
     <div id="reswarn"></div>
   </form>`;
   modal(r?'Reservierung ändern':'Neue Reservierung',body,`${r?`<button type="button" class="btn danger-ghost left" data-a="res-del" data-id="${r.id}">Löschen</button>`:''}<button type="button" class="btn" data-a="mclose">Abbrechen</button><button class="btn primary" form="f-res">Speichern</button>`);
@@ -952,6 +989,14 @@ function openResForm({id,d,z}){
 }
 function updResWarn(){
   const f=$('#f-res'); if(!f) return; const el=$('#reswarn'), d=f.datum.value, z=f.zeit.value;
+  if(f.wdh){
+    const mode=f.wdh.value; $('#rs-wb-f').hidden=!mode;
+    if(d){const o=[...f.wdh.options].find(x=>x.value==='m'); if(o) o.textContent='Jeden Monat ('+nthTxt(d)+')';}
+    if(mode&&d){
+      const ds=seriesDates(d,mode,f.wdhBis.value), zu=ds.filter(x=>openInfo(x).closed||!timeInOpen(openInfo(x),z||'12:00')).length;
+      $('#wdh-info').innerHTML=`<b>${ds.length} Termine</b>, ${esc(fmtDate(ds[0]))} bis ${esc(fmtDate(ds[ds.length-1]))}${zu?` · <span style="color:var(--warn)">${zu} davon an geschlossenen Tagen</span>`:''}`;
+    } else $('#wdh-info').textContent='';
+  }
   if(!d||!z){el.innerHTML='';return;}
   const o=openInfo(d), k=svcOfTime(z), rm=raumById(f.raum.value);
   let h='';
@@ -1117,8 +1162,14 @@ function addSample(){
   const R=(off,zeit,name,personen,raum)=>({id:uid(),datum:nextOpen(addD(t,off)),zeit,name:name+' (Beispiel)',personen,raum,sample:true});
   S.reservations.push(R(0,'19:00','Familie Berger',6,'gaststube'),R(2,'18:30','Firma Kolb',35,'saal'),R(2,'19:30','Herr Ott',2,'gaststube'),
     R(2,'20:00','Stammtisch Feuerwehr',12,'stueberl'),R(3,'12:00','Seniorenbund',18,'saal'),R(4,'11:30','Taufe Fam. Roth',24,'stueberl'),R(8,'18:00','Kegelrunde',10,'gaststube'));
+  const kom={'Familie Berger':'Geburtstagsfeier','Firma Kolb':'Weihnachtsfeier, Steakessen','Seniorenbund':'Sitzung','Taufe Fam. Roth':'Taufe','Kegelrunde':'Kegeln'};
+  S.reservations.forEach(r=>{const k=Object.keys(kom).find(n=>r.name.startsWith(n));if(k)r.kommentar=kom[k];});
+  // Beispiel-Serie: Stammtisch jede Woche
+  const st0=S.reservations.find(r=>r.name.startsWith('Stammtisch')); st0.kommentar='Stammtisch'; st0.serie=uid();
+  seriesDates(st0.datum,'w1',addD(st0.datum,7*7)).slice(1).forEach(dt=>S.reservations.push({...st0,id:uid(),datum:dt}));
+  S.reservations.forEach(openRoom);
   // Beispiel: Saal am Tag der Firmenfeier abends geöffnet
-  const kolb=S.reservations.find(r=>r.name.startsWith('Firma Kolb')); S.raumStatus[kolb.datum+'|A']={saal:true};
+  const kolb=S.reservations.find(r=>r.name.startsWith('Firma Kolb'));
   S.erwartet[kolb.datum+'|A']=25;
 }
 function removeSample(){
@@ -1207,8 +1258,8 @@ function repRes(from,to){
   if(!list.length) html+='<p class="none">Keine Reservierungen.</p>';
   Object.keys(by).sort().forEach(d=>{
     const arr=by[d];
-    html+=`<section class="rep-day"><h3>${esc(WDL[wd(d)])}, ${esc(fmtDate(d))} <span class="sub">${sum(arr,x=>x.personen)} Gäste</span></h3><table class="rep-tbl"><tbody>${arr.map(x=>`<tr><td class="t" style="width:60px">${esc(x.zeit)}</td><td><b>${esc(x.name)}</b></td><td class="r" style="width:70px">${esc(x.personen)} P.</td><td style="width:30%">${esc((raumById(x.raum)||{}).name||'')}</td></tr>`).join('')}</tbody></table></section>`;
-    text+=`\n*${fmtDay(d)}* – ${sum(arr,x=>x.personen)} Gäste\n`+arr.map(x=>`${x.zeit} ${x.name}, ${x.personen} P.${raumById(x.raum)?' – '+raumById(x.raum).name:''}`).join('\n')+'\n';
+    html+=`<section class="rep-day"><h3>${esc(WDL[wd(d)])}, ${esc(fmtDate(d))} <span class="sub">${sum(arr,x=>x.personen)} Gäste</span></h3><table class="rep-tbl"><tbody>${arr.map(x=>`<tr><td class="t" style="width:60px">${esc(x.zeit)}</td><td><b>${esc(x.name)}</b>${x.kommentar?`<small>${esc(x.kommentar)}</small>`:''}</td><td class="r" style="width:70px">${esc(x.personen)} P.</td><td style="width:30%">${esc((raumById(x.raum)||{}).name||'')}</td></tr>`).join('')}</tbody></table></section>`;
+    text+=`\n*${fmtDay(d)}* – ${sum(arr,x=>x.personen)} Gäste\n`+arr.map(x=>`${x.zeit} ${x.name}, ${x.personen} P.${raumById(x.raum)?' – '+raumById(x.raum).name:''}${x.kommentar?' ('+x.kommentar+')':''}`).join('\n')+'\n';
   });
   return {title:'Reservierungen',sub:rangeTxt(from,to),html,text};
 }
@@ -1360,7 +1411,15 @@ const ACT={
   // Reservierungen
   'res-new':d=>openResForm({d:d.d,z:d.z}),
   'res-edit':d=>openResForm({id:d.id}),
-  'res-del':async d=>{if(await ask('Reservierung löschen?','','Löschen',true)){commit('Reservierung gelöscht',()=>{S.reservations=S.reservations.filter(r=>r.id!==d.id);});closeModal();}},
+  'res-del':async d=>{
+    const x=S.reservations.find(r=>r.id===d.id); if(!x) return;
+    const later=x.serie?S.reservations.filter(r=>r.serie===x.serie&&r.id!==x.id&&r.datum>x.datum):[];
+    const c=later.length?await choice('Serientermin löschen',`<p>Danach folgen noch ${later.length} Termine dieser Serie.</p>`,[{v:'',l:'Abbrechen'},{v:'one',l:'Nur diesen',cls:'danger'},{v:'all',l:'Auch alle folgenden',cls:'danger'}]):(await ask('Reservierung löschen?','','Löschen',true)?'one':'');
+    if(!c) return;
+    const ids=new Set([x.id,...(c==='all'?later.map(r=>r.id):[])]);
+    commit(ids.size>1?`${ids.size} Termine gelöscht`:'Reservierung gelöscht',()=>{S.reservations=S.reservations.filter(r=>!ids.has(r.id));});closeModal();
+  },
+  'res-tag':d=>{const el=$('#rs-k');if(!el)return;const parts=el.value.split(',').map(x=>x.trim()).filter(Boolean);if(!parts.includes(d.t))parts.push(d.t);el.value=parts.join(', ');},
   resfilter:d=>{UI.resFilter=d.v;render();},
 
   // Betrieb
@@ -1435,14 +1494,18 @@ const FORMS={
     });
     closeModal();
   },
-  res:f=>{
-    const v=fd(f), data={datum:v.datum,zeit:v.zeit,name:v.name.trim(),personen:Math.max(1,+v.personen||1),raum:v.raum||''};
-    commit(v.id?'Reservierung gespeichert':'Reservierung eingetragen',()=>{
-      if(v.id)Object.assign(S.reservations.find(r=>r.id===v.id),data);else S.reservations.push({id:uid(),...data});
-      // Raum mit Reservierung automatisch öffnen
-      const rm=raumById(data.raum), k=svcOfTime(data.zeit);
-      if(rm&&!roomOpen(data.datum,k,rm)){const key=data.datum+'|'+k;const st=S.raumStatus[key]=S.raumStatus[key]||{};if(roomDefault(data.datum,rm))delete st[rm.id];else st[rm.id]=true;if(!Object.keys(st).length)delete S.raumStatus[key];}
-    });
+  res:async f=>{
+    const v=fd(f), data={zeit:v.zeit,name:v.name.trim(),personen:Math.max(1,+v.personen||1),raum:v.raum||'',kommentar:(v.kommentar||'').trim().replace(/^,\s*|,\s*$/g,'')};
+    if(v.id){
+      const x=S.reservations.find(r=>r.id===v.id); if(!x) return;
+      const later=x.serie?S.reservations.filter(r=>r.serie===x.serie&&r.id!==x.id&&r.datum>x.datum):[];
+      let all=false;
+      if(later.length){const c=await choice('Serientermin ändern',`<p>Diese Reservierung gehört zu einer Serie. Danach folgen noch ${later.length} Termine.</p><p class="hint">Bei „alle folgenden“ werden Name, Personen, Uhrzeit, Raum und Kommentar übernommen. Das Datum ändert sich nur bei diesem Termin.</p>`,[{v:'',l:'Abbrechen'},{v:'one',l:'Nur diesen'},{v:'all',l:'Auch alle folgenden',cls:'primary'}]);if(!c)return;all=c==='all';}
+      commit(all?`${later.length+1} Termine geändert`:'Reservierung gespeichert',()=>{Object.assign(x,data,{datum:v.datum});openRoom(x);if(all)later.forEach(r=>{Object.assign(r,data);openRoom(r);});});
+    } else {
+      const ds=seriesDates(v.datum,v.wdh||'',v.wdhBis), serie=ds.length>1?uid():'';
+      commit(ds.length>1?`${ds.length} Termine eingetragen`:'Reservierung eingetragen',()=>{ds.forEach(dt=>{const r={id:uid(),datum:dt,...data};if(serie)r.serie=serie;S.reservations.push(r);openRoom(r);});});
+    }
     closeModal();
   },
   tpl:f=>{
