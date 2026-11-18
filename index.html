@@ -509,7 +509,7 @@ const holiday=d=>(holidayObj(d)||{}).n||'';
 /* ---------- Öffnungszeiten & Dienste (Mittag/Abend) ---------- */
 function openInfo(d){
   const sp=S.hours.special.find(x=>d>=x.von&&d<=(x.bis||x.von));
-  if(sp) return {closed:!sp.m&&!sp.a,m:!!sp.m,a:!!sp.a,note:sp.name||((!sp.m&&!sp.a)?'Geschlossen':'Sondertag')};
+  if(sp) return {sid:sp.id,closed:!sp.m&&!sp.a,m:!!sp.m,a:!!sp.a,note:sp.name||((!sp.m&&!sp.a)?'Geschlossen':'Sondertag')};
   let w=S.hours.weekly[wd(d)], note='';
   const ho=holidayObj(d);
   if(ho&&ho.frei){
@@ -702,7 +702,8 @@ function dayCard(d,t){
     body=closedRes.length?`<div class="svc"><div class="notice err" style="margin:0">${esc(o.note||'Geschlossen')}, aber ${sum(closedRes,r=>r.personen)} Gäste reserviert!</div></div>`:'';
   } else body=`<div class="svcs">${svcs.map(s=>svcBlock(svcInfo(d,s.k),s.zeit)).join('')}</div>`;
   return `<section class="card day ${o.closed?'is-closed':''} ${d===t?'is-today':''} ${d<t?'is-past':''}" id="day-${d}">
-    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}</small></div>
+    <header class="dayhead"><div style="flex:1;min-width:0"><b>${esc(WDL[wd(d)])}, ${esc(fmtShort(d))}</b> ${d===t?'<span class="pill ok">heute</span>':''} ${hol?`<span class="tag">${esc(hol)}</span>`:''} ${o.sid&&!o.closed?`<span class="tag">${esc(o.note)}</span>`:''}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}</small></div>
+    ${o.sid?`<button class="btn sm ghost" data-a="special-edit" data-id="${o.sid}">Sondertag ändern</button>`:o.closed?`<button class="btn sm" data-a="day-open" data-d="${d}">Ausnahmsweise öffnen</button>`:''}
     ${o.closed?'':`<button class="btn sm ghost" data-a="plan-day" data-d="${d}">Dienstplan</button>`}</header>${body}</section>`;
 }
 function svcBlock(I,zeit){
@@ -1317,6 +1318,7 @@ const ACT={
   'tpl-edit':d=>openTplForm(d.id),
   'tpl-del':d=>{commit('Vorlage gelöscht',()=>{S.templates=S.templates.filter(t=>t.id!==d.id);});closeModal();},
   'special-new':()=>openSpecialForm(),
+  'day-open':d=>{commit(`${fmtDay(d.d)} ausnahmsweise offen`,()=>{S.hours.special.push({id:uid(),name:'Ausnahmsweise offen',von:d.d,bis:d.d,m:true,a:true});});},
   'special-edit':d=>openSpecialForm(d.id),
   'special-del':d=>{commit('Gelöscht',()=>{S.hours.special=S.hours.special.filter(x=>x.id!==d.id);});closeModal();},
   'abt-add':()=>{applyAbtForm();commit(null,()=>{S.abteilungen.push({id:uid(),name:'Neue Abteilung',farbe:'#6b7f8f',jeGaeste:0,min:0});});},
