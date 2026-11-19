@@ -24,6 +24,13 @@ Für die Fragen, die sich jede Woche stellen:
   Ausgabe als PDF (über Drucken), per WhatsApp oder als kopierter Text.
 - **Betrieb:** Wochenplan Mittag/Abend mit Saisonen (z. B. Winter, Sommer; gelten jedes Jahr), Sondertage und Betriebsurlaub, österreichische Feiertage, Räume, Abteilungen, Schichtvorlagen und Backup.
 
+## Gemeinsam nutzen (optional)
+
+Mit einer kostenlosen Supabase-Datenbank arbeiten **zwei Admins am selben Stand**, und das Team sieht Übersicht,
+Dienstplan und Reservierungen über einen **Lese-Link mit gemeinsamem Passwort** (nur ansehen, ohne Telefonnummern).
+Einrichtung: siehe [supabase/ANLEITUNG.md](supabase/ANLEITUNG.md). Solange in `index.html` bei `CLOUD` nichts eingetragen ist,
+bleibt alles wie bisher nur auf dem Gerät.
+
 ## Daten & Backup
 
 Alle Daten liegen **nur im Browser des Geräts**. Daher gilt:

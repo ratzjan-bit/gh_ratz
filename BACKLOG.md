@@ -39,3 +39,11 @@ Die Regel ist fest im Hintergrund hinterlegt (`BEDARF` und `FENSTER` in `index.h
 - Beispiel Service: 25 Gäste im Halbstundentakt ergeben 1 Person, 25 Gäste gleichzeitig ergeben 2.
 - Gibt die Spitze den Ausschlag, steht die Begründung in der Übersicht, z. B. „Ankunftsspitze 18:30–19:00: 41 Gäste“.
 - Die Werte werden mit der Praxis nachjustiert. Abteilungen außer Service und Küche werden nicht berechnet.
+
+### Gemeinsame Datenbank mit Admins und Lese-Link
+*Umgesetzt: 19.11.2026*
+
+Supabase (EU) als gemeinsamer Speicher. Admins melden sich mit E-Mail und Passwort an, das Team liest über einen Lese-Link mit gemeinsamem Passwort.
+Die Rechte prüft die Datenbank (Row Level Security, `supabase/setup.sql`). Leser bekommen keine Telefonnummern und keine
+Krankheitsgründe. Gleichzeitiges Speichern zweier Admins wird erkannt, der nicht gespeicherte Stand bleibt als automatische Sicherung erhalten.
+
