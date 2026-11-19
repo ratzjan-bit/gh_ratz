@@ -31,6 +31,20 @@ Dienstplan und Reservierungen über einen **Lese-Link mit gemeinsamem Passwort**
 Einrichtung: siehe [supabase/ANLEITUNG.md](supabase/ANLEITUNG.md). Solange in `index.html` bei `CLOUD` nichts eingetragen ist,
 bleibt alles wie bisher nur auf dem Gerät.
 
+## Datenschutz (DSGVO)
+
+- **Datensparsam:** Beim Personal werden nur Vorname, Abteilung und Fix/Springer gespeichert, keine Telefonnummern.
+  Bei Reservierungen nur Name (Vorname oder Gruppe), Personen, Datum, Uhrzeit, Raum und Kommentar.
+- **Keine Gesundheitsdaten:** Bei Abwesenheiten gibt es nur „Abwesend“, ohne Grund.
+  Im Kommentar zu Reservierungen bitte keine Allergien oder Ähnliches eintragen.
+- **Speicherbegrenzung:** Reservierungen und Abwesenheiten werden **6 Monate nach dem Termin automatisch gelöscht**.
+- **Keine Dritt-Server:** Schriften (`fonts/`) und die Supabase-Bibliothek (`vendor/`) liegen im Repo.
+  Beim Öffnen werden keine Daten an Google oder CDNs übertragen. Verbindungen gibt es nur zu GitHub Pages (Auslieferung) und Supabase (EU, Frankfurt).
+- **Zu erledigen durch den Betrieb:** einen Auftragsverarbeitungsvertrag (DPA) mit Supabase abschließen,
+  einen Eintrag im Verzeichnis der Verarbeitungstätigkeiten anlegen und die Datenschutzerklärung auf ratz.at ergänzen.
+
+Lizenzen: Playfair Display und Source Sans 3 stehen unter der SIL Open Font License (`fonts/OFL-*.txt`), supabase-js unter MIT (`vendor/LICENSE-supabase-js.txt`).
+
 ## Daten & Backup
 
 Alle Daten liegen **nur im Browser des Geräts**. Daher gilt:
