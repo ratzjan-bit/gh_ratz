@@ -246,6 +246,8 @@ table.plan{border-collapse:separate;border-spacing:0;width:100%;min-width:820px;
 .res-pax{text-align:right;font-family:var(--font-display);font-size:19px;font-weight:600;line-height:1.1}
 .res-pax small{display:block;font-family:var(--font-body);font-size:11px;color:var(--muted);font-weight:500}
 .search{flex:1;min-width:160px}
+details.more{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}
+details.more summary{cursor:pointer;font-weight:600;color:var(--muted)}
 .tagchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
 .tagchips button{border:1px solid var(--line);background:var(--surface-2);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--ink)}
 .tagchips button:hover{border-color:var(--accent)}
@@ -337,7 +339,7 @@ textarea.code{width:100%;min-height:160px;font:12px/1.4 ui-monospace,Menlo,Conso
 <header class="app-head">
   <div class="brand" id="brand"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHcAAABwCAQAAACONSe5AAAr2klEQVR42t3dZ5hVVdI+/N8JnaADDU0GyTkHAQkqSVHEhApGEHPWMecMZgdzzgkDYhbEiCBREARBcs45NN19ztnvB7Y96OioM+Pzf553c11wQa+zzq61qmrdVXXXgv+ZJyriEgsstsqF3vesMiBdXw101U91/795Iihjposc7SC7nWaUK0XFPGiFRSYYZ45DEftrXyT+PyJuIKrQEhGrzfSEAknLpNDB2Zra4kt36OpDkb9ayf6nlDnwtmOU6CXLNWqp6gMnKfGtsqrKUd8rSP3fVeGomFionhFU952OXhd40DJLnKLYSgU+1M+pRoeLH9nrU/+HdjcqJSkpKYJAxErr7O9l35vpe8f6wJN2qC7qCwO9LSIiIgg/Ff2/JG5ESm33eMYggUjohGZrba6XrDFTR69ZZqlcq6Sp5T2BQKCCq93tYKm/wo5jf5nOtPOWORY7SQsfiyJQU0urNVEi30D7qW2+maoop5ZHxCXV8JFdlrhCvnGigv8buxu42UsC/Q3T3X4iopihwBY7VTXXYHe4xg4VTXCQ8SLSxNzkS7P1cJ2TNZD6b79f9C9R5ECGTGs084zevlVJUkLUAiXaqmK7iobpYLCdylqhti9EFEqqYJW2FupghsZi/22F/qvELRKxn0XOVuJIJzpNrpTNdtnqC7m226SH6nYplKOMGVLaOF87nZVRRqFOpkv+t5U59pcI28jLMqUU2EfESCu1dJUp1ugtkFDJWm+IGSFqrvrqecqNrrLSeBU101WOIv1kmPrftd/4f1lXYlIaGOlxs9WxwVjd9dDSSNO9oLUZuvvQNu0doKqa3rVDK+P1dqTznKCG91ysqTRRJe5Sx1XSpCT/N8KKPc87rnKGYoEfZHpJYJadhhitvb6+8IjprrBZ4DtX6eZTh3vRmT43RUKgsZaKBd7XxGztSmHK/yrbjUip5XbPa26mJ6RJGOsiE6Rc4EizlccSGd72oxmu8qrLrBWXZ6Zyis12lPfN01YHa9HXEZ7zmvsMFPx3RI7+6fGR38TEHXwh3ZfuM0Mvd4tb5QDpig2TcortvrNORNQrWuqnhQvUUUnUEu+6ykva2t8EvVS12mSdvO5995vuQo//hriRv852owIpxKT+yX0EYu53o0UuNsoNGjhbfQ18LZCpk7HmaaPEVrt01tpHyhlvpzS1rBXzpDzfhBHwOpk2utn5WrtDAxxhrL4+EPuZDUcFAhGRPx5YxP+ED0+ike1Whf735/i4Fkb7XoH+4H5Pud4FRljuE0WqGuNGn9lpq+rqi8gSN1tzsyWdqrdxFquji3PsI097J+ElMMcbevvgZ3sZlUJF6wW/WIb/grhxCa3dJVO2b1wg+IXApInYbpECxQIZttuiiQ5ed4uW8n0o06OGmqqiN+WoJN/H4vKNNVxHQyVUtEq6H/SSYyVKRMQxT41fWfzOhsqy060+/+MC/9HT+QRrnKOWRt42WvRnVhwRkW6m/VXwiUBggmquFKinscIQ/D+vi0m+9rDhrnCLTu51pff86FVtfBSOegMjzRPxrEBgnRMwwxF7oYQYjrHVGVo60Urn/TcRRAznWq6tPFWcoJy3vRD++0/Rabqok63VE6NMlS7fRqNV081LoSBb1FVdiU894R0vesACp9nha8wLxxS5UGfHCvTBOxarIctHPpEhTVwsdK8dbdBRC73lqmuxa/5bAkdxgQVqKm9/f/OjH1T1g1OR9ouxAyTcqIIG8owXuM5hvtfUMe5zkdrudLXTpQzwiM+t84qzBA5wvHaG+dwT9jPUOJ2kLFVdY600sd7rP/PFMTmWONLxJhmoiUqqWfjfETiGXpZrrIEBjg536g2drVQVFVziac+53wX6iBssUEXcBIGU+3QVKPS0891susAOLaw0RVMjjXGglZ51msDnBhngTGMEnnKYQOBLpFtqivoGusYj7g3d4POe1kpK4EXddFdZLUud+fsHa+R3wUPEOPcY71grXK6LlKQ0J+si8KoXzDBJkZqqqiXbSge7VgWXKpZuquNNlVc6W6EMp2npdJ+Im6yvRi5yiMbqlY4KDFbbzYpkOFeG+y22wRbLrZHtAKs87CGHGqW+lJgFTpVppahP9DQ39Nj/tiI3MlWWiCqeE0goEtjuOW0ssdUAxNREplz13S+wWbGklJQSLYyQUqREIrTO11wsYYopXrHOam11dpzDvCClSMJOTU0SSEjaaIfXdFIgDZXBUIELHe0V2wVKBD7RVQs8bOjvKfTvH0TZihU6XH9Xa6STqdYrZ7RyRvneCLkiDrXCGmXEPGSH68KwvESaEzzhOFFRUVPNsdMihe61Q9Ium+XqqcQutUzRX7qoD6VrJyUmpby3/E15DS3T0xJrlXWzqJliJhvgRX2V95EsI3UwX5P/DEQGWKSCApWc4nbHW6mNT4xDxK0+Uk1vOT50lFwt7O8p75sW4pw0XGS+CeKi5rrVgz7XQUtZqqiuoah3VXe/6+1URVJcxBNOEQtzksvc4xQN1HeIdr5WU0Q9N0q3U323KVbe3431nooS2vnhP4MZgajNFjjaVCmDrXKEqS5zhvLGizvUiRb5wXyzPKqyuGynutPrUgJz1bXBdfIskKmCVso7yEKPy5JAIN1Oh0jZKhDIMVt1p8gV2KysDPfp41LfqS2pj4Yq2KGKuhYoNBk3mOwhX8kwW1I7Q8Mt+o8885GmyLVc0rkau1ngPW2k62ObwAYDnambxQIpSbt0NkfgC9yikgudJkN1u9zoUDfp8YtvGCMw1ileNR9HeAUvKedx23WwMbT4J5xggGMdZpZvRTTQ0SY7dNTEIoErnOiz3/fMv2e7SRHvull7b2hmmyk6a2qnPAmHyVEiz3JveNm9HpRElm5edpsaTlLPyarKF5MpTTVpKigrHgYZe2BoOcxXopYqTtNaYxdpqLe2XtVVeSWiAi95xntmeEEm2vjWpeZ4RXedXe15o7zilt8/aaJ/wDun3Od6j7rHxbINc59cWwSaCaT5TkxVB5thh5g4TjBBQj33OFsDz9rmK4eLqybTZkskQk9dIiEhS9ICeerKVt84jyvnVrW0967jkCbmG+XU09l6mRKora7d3vOda/WT5RgH2+ld0d9Dzr/vmZMiXnChfX2pjSJ9jTLNfmarLoJl6rnbq370lUOttFlU3AztxF1gmwPsdKhqaCxqtubqy1Rgix0yTBKYY6WGKkvpoMgWhZrrZqE0HX2ssVpGm+gAA6UpEUNNH9vXs65WVkJHF1im/x+Jfv9IeB/BFf7mSFEZuM0YTZQNVzJmhdFGuMA7tnvU2Z7R0VgRFdzuMX28pq8mkur5URc9VVBRXL7yDnCZaT60Qzck9LBDkYjdDvGByh51pLkixhuup3tkhYm6HSKmqqWviLjGHjHKN7+/t38sAIxI+VSR231sp0aau8yjqluhMarYrboCJ7rRSFPkmC1XBAkpj7rBpdpJCkS0w6W2ls78tOc9pY4c+yNNwsXusthwKQst9aOm3pMlaqCx3lRBTAIrNfWDt63zta3aOkPTMO3wH4sbl5DlVYEeZmsiqcAl8oy3SiDQVKZiT7tMoYnSBNYaYwiS0nWUrZU8CVFUl5RwhTrSTPOsYtsVmK2ldAkREdU1ElFFoLIHNJPuCyvUwJvKa4KoEussd7ph3pdumgw3+9jJvhL9T0umMbQz2yvS5eqkpy+9qrfqOFOgSOAGRzvMF3ooowZquc328AD5CToGUna53B24TdJgqz2N25yHyZLhqMLS8bvcoSGyZLnGK47WxQKBwFwZqOcS3ztEdS1xsrWu+c8y55Ew+FtrMPJk6O618CS8Vll17JCSslYLf9NWhhxdPBaOSLrXQZqro41TTBOY5yoX43RLcI4SEae4RA+BwEIX6Kaxdg73ULhMWz2jt2wVnexgV4fL+xga+1pgl9eNtY8o9jHB5/b5dwXeI+xT5mkl2yHmmuRrgZRiJW5UHW+GL/C6al73njmlQXrgbtRUQxPlpcuz0Dg3OypMFXCdHSLau9sDAhPVAt3lqK9GqWiBwFLTDNLbbkkJgf3Ry0olSgTWOM/jJjtMtjus1etfOeDYv1DjlIe1tr9lysuxVHXtZYqI2eIhK2WbZ4iopBaK3eoSjSUlkWaVY0R0FVFXeVu1N1muYuOs0cZBtrnMQ76QcqDdqhuim+UOVc5S/VXwlIuVkVAiLs/NZhspR1Lcp4bZV4GlDhRHtla2GmW1lT60zJM+sebPllpiGGiRXNRWRTWVRFVwmJftEig2XEO8JgiDuzvFPC0Q2C3lNs3UMsABjvWoEVYaorcn5eM0W8w3W5qIiEedoKevTdDAMS50sKscorGXQ4WeqI0j7Q6r+sU6SNNWR5MF5rnd/vIRE5UrF2f7VvzP5Z8jIsqa7SBU08Vheutrfz09ra/2rrXCKn3VVsNqQahkb8oxwEqBQEsf29e5nvC8LQKBFU7ykAjOMU8l250rgjsd6i2BlK98rtCPLneVBxwvsNAlGnow9AUlAkPFRZxhi/f01dRxGmlhf0doq5eKCsSNd9Jv6W38N8BH0tFW+9JJ9rca02XZ5USnGmKaJ/VRH3FLnOZdEVFJ/fV0qjau0lKRg03zpfttkSchJqKSVQKUyLLOOGd4BPO1tY8UuoG6RntR4HFX+kg9k+UJkBI3wVC1tBfVXYYT9VfVw0bIV1VUZ000857hzvXSnzmQYhhliKNCZ7Hbp97R20IJJQKB5W7RU6ZcXBAq2mvGCHwiV5bTpazT3LdhXiLwlaucDK60BacKNERPQz0tkJBSLHCPMwS22ke2Jr5Q6FUbJAWWaiBbO22dYEzpQfejPga51BeKFAqMVskcVX8dUkZ/VZWT0tQx1QAkLfG1HlrLVktUHEk1XO8dj2uHB10kKqqTUQbbrYNC+4moKNf5hKWWxfItRSWdrXGYbZa4VaZ5ylsZRtdpVrpOPnI1lOsa851mm7KiVulhvnIO8LyX9ZYM4/F6yjjQ1VraLFNSBxEb7PvH618R1DZNfYvC7NIlkj52ZmhBC0LYkBIIfGIADrZGIDBGf7WkW2aDrobYzx0heLjZg2ogXbYMOcrKUkFU1KMuDElJJQ5wt/562elmufo7OtzHz1VXw51W7wVedggkBc4xQuBld4e5q7aedOWvG2r0N8KGfeyWrmqYP6wsaqMcRJ2pqc6esFtEUkovr5kuTxePWmemlhIa+kE3vTztVY94T6YSW0WsFlFshyLb7VRoo4jADsmwMjhIG5d5Uws97ZC0TX2NzHaKU51rnitUkUDMl87UwACBQEXLBMraHELIfaz6pyLL70REeTbJkSkZKje75Ap87F3VLHOW5h6REpWU0toIz3tfb596xU4LXGCYGxWq5SVn+FLEbut/hWuRFFgo0xIR50hzn91K3OcMDyi0yAa36i/PRNcoI4G4kbo50NPixnlWRI4ikVDUAFVtlPvraZzfChEqhA5rj08MwlJkxP0e9bqdqpnnPM+6X5fwp118YKLnLbfTUZ6WjSx086lLdFPPVhWlSYakhp+WOyGhoUW+lO9RZIIh2jrGEvn6+UIVlCDqR+cZK0clDeS61BVOVWA1EqXilbNDuT8XERVKlrrysraijGJzRB3rHSut1tUGC1xiioidtttkl7hjVDNeU09aabeolB3SbHWDJsqIiIpKyVaudPaEub4zRZ4zXaYCcuVKV9PVtjtIfYESaWGB5n5jNVI2FL6nxkZLgA1y9vI+63/dM/+WuNvFpYUfqWQzKvnOGIdLiOsi3/fWa6C8t92jWIBMUTnKqG2JpALZiuWpoVgDgxSJipeSDoJSZUu3wU79pFlro422KZRmu2IJmZ6VEJMlU7ZKTlektWzlHGq+1RKON0YNFbE2TLuzTXlFf253i+UrEYiiqi2oY4flqourpKpLPKyhmJkmqug6a8VQKGKjlO2KpWyUJWWFMnZba7MigYhoCO0j0sVRQRxbxRUoL0t5SVnKCqRLyQgtcqtCIzwlope6VjnHU5Li5lohqhmW6xT6orUaWfvHxQ2wVtRuO2WjukKb7WObfs5ULG6NlHaaijtTRYEZLlVs9y/mKfCGLQqVE6jlAc+W/iRXXHKvrAaZ6thi7S+wUFSWDNnKyTJYf0stcrZ6PhJYZY0hPvaaJ7TARvVCcTeo7ts/4qqipYq2RoaodbIlZcv2nQNly/a+C010pqh20uxUooqZatom6ic+8k/5y7JqudQyUYVelyNNiZqu0FG++tZaYbK7LZal2NM622mlQ8N07B4XmbLTTpssQ1cR1SyWJdBZxHYjHW2ihJ1qWKIkjHUTdqhqUSmd4WcZrOjP4ts9h31K1CaBPCuQRAMzBDr5UEtfGG5ZKQRPqGFXqR9MlXKYS6QsNUeBDdbZrozvlDjRZ/KdZ7GXbTFMlnGOVyhlhwfdolAyBKQpqTBUiYhIE9XQOrUlEJGDZR4zwj7e1UxgsqrSlGCFYlnmi4ZwN7k3zyAa/h4XSGnnEXfKl5K0RhWzQ+VuaY6IHuYrFGhTeoxEJBQolin+T5A8hhn6iIjKlmumQe4xxEnyVXGKXdo61akec4bAamU1MfmfzOonZJySbbPaSkr1r1AdKQlfO0rEJPuGB+Yc5RVZJ6WbMT5xuJRAfI+k0XBXE/bxnBHWqOIb1UXM18TccIU7W2mnmvJ9IVC0l7gpeSKi8v/J8acwRhsRKQU2au0OvYwTc7uHpDztYgU+cZQHVVUoqYEpv2pxEYEsZSVUVlJqMOnSRXwpXTslFugW7uI0zS2XdLS3vOwpd3tRFQkpUZE9XKmmHjLaRu3ca5B3vSMwRWPzELNQvlyzBI7zvOhenJudkqqK26FK+BJRkdI/maKMJsgTuM4tZos6VpbnRLws5Vx8ZpSrZYgq69tQ36LhCf2PBawuJaJARHH4TZuliXjAGZiFxhaK4nudfKKaJ5xstBE62eYbd2kmJYgq5zlvSTjGVSrIc567rXerzzSw1hZRrxivs6/Rw2Zfy1dcelwF4srbpXL4EnvCBlKSIgrNdoiI3fZT4GlREde5V7E0WzzuUuXEPKynRjJttFFUIpwlVYrm9mD4DfKlC2wNNSBdWR/I1h2jdbPdnWKKLVfHVK+5xVqtNFDBxY5W3hveUiPqGWW0d5s5emmhssmucIHTNLNJvrmoa45eJouIut4wM+WEyrpFHPk2qxGSRC7wmsrG+NCbmuAjBwkUK+srxVJOEnhRRELE/XJcIGmObGWVNQsph5rkeRUcYJTmpd6ltk2qIsOG8LvLmORxpwqkfKm/6cpjvjJ2GmSzr52q0C4N9bXN6Zpb7/Wobq5XUz1HWCXQ1H4GGuRiQ+1U3yw0sVhju6wQiKnpfE3DGHa9DFSxVg2k5GvjQJ1MNsL+tuJj+Wpbq9iPIsq63k0SolIiVnrYVSrbJGqx6r5CU8e43SnOVs1hmpR6hBpW2gflLJGSQGXXqGo9JkqqY5ImmKSqenq61pNOd4zDROxQWaYBblE3aocd3tPUD3L94HjD1XCluWbrpbpZqGejiCY+FzFWlgpqhmnZhQpQxyYVEbfBfYp86zpxS20Qs91Up9hlnTICV1jnrVKySMRtYoaK22mJhFnINs4USVO9aqltpbZb0Qb1UM1sUekCFcXMUEHEmw7BYs3xjUbqulcfbWW4QH+ztDPDI16SbWNURJq4J8R8r48DpSSkud+t0rW1GHnSrdbLl8jyo3S1LLPCVd7VDDVsUyFUsTyZNjrA/UpUEuBJR4mYqL4yznN5KW5LiVprqCFuM1EZMyTETbbcLB8ZHdaBfxpd0Rb7oKUJ7jdVRHvrsdRss/VXYpO6WKS3Gca7QVJESjdvGGOIU62SpUxUXI7lYt6wRSdlBeKSeujicvtaZzcqm66z1caLWq6lLZ411Bdm6YwaCmWFe7bDbhHjrXS55SKivrXMyR7UybM+NX6vwlVK1H2mucIHWngPSQ08aahLtVJkt8JwXKaYEjXRwXrDPWidfbTW3BRLZKhljiz5NilU16WuD1MRgUyfmO5qScukS4vaoIZvRMwSuF+xiEBEyl3eN0WulahtmRwZZpmvWEMPGidimXpaSagoTUq+FLrYR1VdNbSp9MC6zd9Msll/54vtda4GYnYYabpttvpBmkBrCQMN08M+GoRMdSpLyZYnoZaW1llgoM/0MEp3k7TBQlWwUDXP2eAkgaikmG/dJs1FYiarZW3UZN28a5VTnS/qDlFJEYEqervEDlsFGpnlURts8608zxprmY+sd5u4uLhsJaogarnhYuqaHObxU2KmmGeoQXaoJCkqJioqJk2JBk5zhktMDBfnXa08ZqsHVTS81HZr26lsiPBvlWay2a62yA7LrDbZs35QVcp2P3pOC/coCT95hhtd701fGqOjcRxohvIaKxCYKtv8ELi9Y7DaomYJvCJXS/s6yWEh14qKRgrscL+E8zygzy8Q+N4w9WWB3o61Ta+f4aX9LXesQQK3/WYBJ4aT3OoaxY6xQGCshtKlIc05umihjnY+F/gQvXTW0FJJgfs0VWS1yiqqZKaOUV/a7RyLjDLcGn9zvM0WmeYln8oRM8cznrJNa2lmqyJbGYFyjnYURrrEK1paZZ9S/utPLY4/wcxcDR3uHvT3dyOdpJ3WBnjVA85QxTPO1ElG2BwZCfs7o6XsKmpapbkXvOkJ9HS2YuVE5Vhguk6qW+EdEyyTJmaXrqKiZrrWm870phdtd751Ju0B8re4yHKDjPeixyywzWZbFPpeVEfPmaeFhiZZroWIqHraG6erfH1VUKi1mWr7TKw0+RYpRUSBjvq4VleDbPGUQB+H6KWZ773kSLUUGq2F5ZaGlh2U/h6EMx1vrrZeE/WJY+U4SkttLddIM9/KtUnSauPUM9paHaR0F9XJZSq7yNeOda16zrQ+LmKqDuqaLmqpi43V2BBJKxXo4HtlrZSpl3ctQ00Ju7V2mccNk2urVlZIKFRQGvHurc5xJbrK9pB2+mmsryVesF0ZZVXRwzs+MMsJvjf4N1scI/IUKbZDWYGrNNTFUx623DHWKDJWtmrKKJSSkmu5Cgp10dA5Wonaro82frSTuEDUVtNDT/msxqbpoI0F8i3WyGqblPOiLTqZaKn9lLhCLTfY1xyHKLDMLhE5YYz6yyQQ7eQ4SImdRhqpQEVx6QqtsiVMt52vmWW/+vk9S5YmbpscVW3zqXF+UOAsVXV0gfKqme1HuWrZorKE7TZpo5l3nGi5mIjA9D3hfqS04pcKQ/yk+xxpkHEQrkrEcc51g9nSjbNaF0lF2lmjtkt9q67p+hlpiTQBknaLS7NVSpYqdolI2hTWm0pC206XgZRdChTY+rNkjr0i6hYGeF9dbDBGoZSZckSwRBOVBIa71QLbVbXbZnCeW53pzbBHYU8bdPBT8iYIlSiQEvM30z1njnfMUewQg23wtk7Wa2KceQ6xW6YXzNVBFf3MVaSODwyyLfSuKSWi4nYJxJUoEZGSFrqin3KRQanvLpEIKWj//CTk+0B12zTUVZE3bPGKs+2WYazdmqK9TBMs8IaN0rV3BPqYXNqQUfpd8X/KHyTFvOhDQ/R3vgybTNHTYzZrolg1bzhEXOB1bDVKnl3ytHWL+TJKRYiEBatI2OnjX5Iz//XPi33tBdNFHYD3Bd50tjQRb6opTVc/yBOY6izZii011OulrUC/m4lMitnobndLk24nPlLbLM0t0dSH1qjiB+U1c6Sq2KS2Wrp4w4dhJvkf3A4/a7GKhp422KvJ7edN57HSiuFPsxTp63TVTbYFHfQ1Ttwm+eaZ5GALHOl5HXzhdrf/okb9B/PMSRFRgRIl0qXM0NK3apnjBMO84AqLNLOfFVKSJjhYXTuNM+gvaaV80y4NVPKVIfJU0Fuhxcp7VHlTtNfQRJd6WpqoYoFYmCT8EyWxQDJcjGJJ32hronYSBnnEg3Yrb712UqJetkwzWTKUaCMqHlaAyhjsZqcog3Rp0mV6wAsu8LrW4Cwfe9JMTaTJkI4MA12ndynIiIuqJEOhStoa5UMU6Wa38tZ51ZH2M8gmW1U3SYkigVhYBv2TnMiYlIRslQU+V9V2EUcr1MNuN9nP92baYqUbtdAU9S3QqjR108gEh4kYbKJaipUotttWJxusi1a6qu0wbQ0WWKlEkWL1jTNQBXd4OaQAp6Q0tl55Ee1V8LRCa82zTh2X2+gkNznUl+raYKW6eqklKfXnmtgjoX+t7HHfmWasOkY63vshx+YUfO1WBTo6lrDZ5mnHeSzkwER87rZwtte86zDPeExN9ez0gjuc5UejXeERS1ws23DPO9ynLkdUGdNdTOirr3GZawUCwzBAaxU86jm0UCyQcqk73eEGP/rAbC+oE5rpH6re/3SLyUXmeERLFVzle5+7xm0CuwWeQr6rQuLXsSHvZpGOPpIhgnzLlXO2xRqrIOEDJ3rOB8qYZ6jTLHKlz73kUlN18qDnDLbYbBxtnmw3GBMuHCMd5HOBhN2OAg2dKx6SFIsFDvOmFUargmqG+9HNYTXwn9pvo7/iptKdaKJ+BjvPVvnudI0DNfN9OL6N8rjDRkS1Dxtd68i0SWdE7bTDDZaobX8bLTLMQY5SYJdXVZPmA4MttdUkJeaopb+enjJPxFHy9HR+SLRPqa+sTToiJcPBIuJWeUSmdO2RZqNVutvlcPXUE3WRE7Qy3u17Uq2/LW5ERNTlxhtsmF5m6GcfF5tvjpscYJWkOKpqpJqyKquuhrml1ZjePnVUCCwudo4PTfKWXJsV2WqQ8zBHnuWessRLxsuy1Ta3u8RshUoE7rTeKBP8PQwXjveNNrLCS2EmiWmhubri6mkBvpervDNd6F3HqutgixzpfHme86Ls0lP/V9X4JjMdIk01uY53j+U2C8xW1iSHh+0VCfvqpJXWGujrYLtCX7hIK5+FXGY+M1QGGlvqZrM0QlQnn8v1gRKbDXGsV0RRxkdeNE8msrxqWLj8aT6zr29C8kmxnuo6zv4666lGSDW9z2VGaS4hsMkE3znOBWqpqbX33f/zODr6C3rREa5WpIGynnSvS9WQabNMBc5TaGUIQqqLiyi2UStF5oRwoY46vnOCQD936ex1RehsHw3M85mzpWySIW6ql90koqrNUrr5wTZpGjpERKExrvKedgLHWqyMTiEUmSvQxiaz5Aq0V14C60QNc6qYNcraT1MjVLRZFXnu0ilklvyq7ZYTtdA0CwXekiul2FinOs4uHey0Ksw31rJDeRXVtVFbY0tR6dle019UoSYGmYFyzsObjnGomxxriZi6kgpUl6uO+Sp7ybkGWK7YDdLwgmtstE7EEM87r3T2z7RVTUKWnvK0Dt9lg9WWesQQt1mvWNwL3lTebHEkSjkIvyJuIA2Fmnvf5zpLiBtvi2n6elhny8Jx/Vypj1liyjrAN+HhFTg45LqO1c8I1FBG3CKdDZLpNVfLFHG5I7U2RIEjzXK5iWaroJMl1snVUswwgy13tPV26h9ibz5zqCpmSXOai50QqulaZzrLQuOttFK6zwxykFNkqyr5y4TQz8XdaqumKuvrPA3EDTTGHMs1c7ekXFvDTxxooC6SVjhad+stEQ1h29Uec6506aJ6WOoOVc1wtOecpoYdetriSW/o7nF32qaC1t4x0jtaWK6jEb5zipgMac433NWiUgJRy6zSzW4VNZVmfw1CcXfgOifZ6HtrzHKC20wyQTVVZQrCcPOfxA1ElNiuvCIx33jIeMvdapot3lQgVuqE9mSgqqiphSVy1PV+mHNMOVTUj4YoFlhvouo2yLPc58aqI6mBzZ50ijucbpJKyqCr+cpbo4Jl0n1ogkCRMyyQpr9U6KPf0kzcVlUkldkrjEiTEPeC/Sz2oeMNca0njdVfNXm2hvySX9ndGOZrpKJecnwr01umYZTGIZNl79imis06a4zjvL8XC+suf3eGCqJmucGBlummWEctvK+NArvdYbzvzHCzmQq108SPGluutaW6mm+OiIpOc4+7wjmjeMdxqGPOXqSIPXWLXQKBF3Q3QnVD8YQMjbyvQ3hM/qq4Ab7UwWYV3O18RzhBGRV0C8XcJTN0GlHstNZG7aT0ttGMcH+TOmvrBXdLilnsGwUmK2uasZbKU9ZHjlMX2QbYYKZyPjfaGEmzVPae98QkDfeMrjpJhlWHr+3WC81ssK409RcI5FknYrd8Z9tiod5ae8lrik12QOhGfzPILm++iq4SmOgS11voBPuHHIeLPFl6acDbvlbNsSGb4kpnh2djUtI6NX3hSHC+wIMC14TVu8dwsoeV+MAlysqyXh+cJPCRwHFgoI/UskVSMpz3JLcJBL4RV9XakHexp8/lWimBH+R71XTXe9B6gdM1tljOv+odi+EVt6qmeC9exOEONFdggPfM9KIHveTvHpGhoVkCKQs0sS4sQCcERmhitmrIdb+J7lJPXK5pFhrjBBVNcJzaXjTGKheJqOZeqw1TSUQds9T1QQheklIWa2y1lMATcsW85knDbfGoOV7TX+B9ldxU+s6B5eIe9dS/7juJoYM1MtwlsMtugWWmO0qmmx1urGF6GGiQdzRUTWd3hGs8wG2lxNsSgUFO8IUIeoSXQnCcd12qv7G+976xlrrEmT7wIDhYQlekmeBw54fz7JnzfGeF4cCNWosb6E7NPW6wc32ht9NkuUQgJVCiUGCAClZp8MuzJ/Ir/ZyvSDnJBPthlALnOtyn1uiuqzHmSdPYWhNU1liRMVIipjvRJDmluali7Q2Rb7Bsjc2x2wUu9Lka1hvkFQdL6qC7M32ph8BJFmvkR0VeMc+nvgpdUQQr9DbaPih2gCxMdZQpakhTqJeZXtfMAAUOVl1M3HAX+9CPLv69iwf2sGiWOUuaUUbo72h3a6suXnexo3SUoaI0++ruHP2MDNXnZFeGAWJghsBSVY0sjXozLDNIdQXGuEUjgfs1sFwrLdWwybHhuHs8p5aNAlMVh5pzrlOsVSzwiaMM10OeMnJV0lIXDd0hqrEeBrpWH1M9jKvNlPWb9y/9Ani0stlpyDTIDfq7AAd7zqGqoIl0TfTS0s0m+bvAXLe4T3NzBabpKcPdAt8ob4zLERdT0b4CrznISH3s8pyz/d0JAgPkyhDHnT5S0SyBK5TV2TSByVo50QiBwCTrvayRupqrKA85urtUb3m6G6CR6x2Ji6xX/4/S86Nob7mH5KC/A5VX2WliqOJhSf1U1t7BRgkkbfeAdloY4jT3yJftMFXMFHhPWZ+E95VEvOFp/Vxhie/09qnVvtXKOV5UD9ztEwW+FBihigHKyvZ31zlKdRd6NXSfPzhUPzmet8qFspQTtb806WpqLV/co5Zq9Wfu4oqhklEWGqaFONKVc6BnLfWAu32ghoP8PeSufquVRg70uHwR2Y50qVOcLBB4W7ZPPICYj51rkLVu8ro5Vjrfxz4z2GT18JA3lPeVwHZtnGWQ7mpJ095V6mqhqbkCCQnjHKO2+Qb7yFz3OECeKDI0d53F3lbpz3YC7lmZbl70vRkmmWC6ae7THDlWaOQkhQJJ63WXLlMn5aXpY389nepbrS2QFPhUnhe9K1NNz3tGGxV85xpj3IVzvKSrmLc9o7JvBJIec4SPnaq3fmoqJ0tltHJ06WHXxqVGhxz5p8wwyzhfmm6Wlxzwh9uwf6XlkTJa6esQjUOzT8eTnsQySYE3xeWhQF0D1XC7K01Q4mw3hq5rmqpuMk3dcOZbLddAB8tUAFVMdrM65oaHTXfvKfSWK3VwmHpOUlammKOVSEn5GPMdVlpmiWqksy6ayfr1DNUf3+PYL5R8D3WvhVXy3C+w1AOqqCFHfcfp5Hz3h576U10lpZQIrNXe4RY4HfxN0vkeMVEWjjfP0braFAo7R4ewZWasC/V0qOPUUkUNx5ttl0BbR5olFiabfvmG/+GtRpHwnuV/rFkUH7pRli3O1dVZeMA9mhhuvhIpCSk7tfF9aX9g4CwNjPaGytLM1M3H+oh52meaODcEFAmBewwKIUaJTUZ5SAVLHaWx1m4ReBmTnb5XBSQSXjIT/Wvu7o6K6GalLP0t1kpTeaYItHJbCPr2wL/+nihF0oHA62q4zCxnKvC2w3QzzbVqei28YGTP2AEeC/+251dtzwjcLKaPhdar6DjzZf52yu2vEJh3/R1PGq6sTN8pMUGlsCi9y24pQ51eCixTEgLrHaOFN7xjtDE+tL9DrQz5ynuEK9bJdwI77QjbZLtIKnafJoZ4xSmY61R/+aXzv9zfRjZoKu4KB+N1gWIFbhJImeVBb7nZEaU7+49Wtnc0c5hRztcwvE0uUdqdH1iurU996gELBJIauE4gMEhNB/sbrjJJ9H/sTvi9TuahJiLfsRo4wAt6K6ONhMB8PV2jh+6KQuUO9trjwHD7utDWn+3rnuBxln1d4jw9LZfytQpq+pvrlVHJ8fI0sP3PtDP+O9eE/NqTEnO9DNeGffNTjXaUbqZbaLbhZttto6XiYdvcP6pPSVxosuFyJfcqXqWkRMVsMM8am70t4gOb9VTG13bpZKKtXnevKX/khox//5qQXy+IBlKOM8Fck21RR1Xn2GGit202Q2Pf+k5PGy3VPkyzREO9CMK8VqTU/lICMVHzZFuPfRWZaZmvHeBkPXTX0waLPWOrm/59Yf9zhT7cJs2kO1ZtV0vaxyku0k4LGZjqRmnO90OpKqf2CsF/suhkiIUHy/a1e5HvQKcZqrrbBPpqqg+utkD5/0mP/Gu6cZYVmsnSR21dZOnvELmoY5wPwgbGLIN88wvx9hZ/urNlg0aWekxZNHecGvbTTW2H4G+/Fq7/vxD4bFv0C+El5VHTcMvdW/rfOuzRhX5GhVFNKsxCBQLjnRguyp4CZw0fWeJyBeGFp3tSEA9YFd5r8//4ieNoS4zQQx2NDfSK+d7QZq9syT+stKVhYc93YKPndS81jMhervNQn5jrcf001MSpJvtMlf8Nwv5kw5U9apn1NpjnTo1/JsI/vPIeYfINNNR5YZT7y3E/naldPGuxDdab48z/6BTZ6/n/ALsSWhgqyhr8AAAAAElFTkSuQmCC" alt="Wappen Gasthof Ratz 1781"><span class="bt"><small>Gasthof</small><b>Ratz</b></span></div>
   <span class="spacer"></span>
-  <button class="head-btn" id="headBackup" data-a="backup-dl" title="Backup jetzt herunterladen"><span class="dot"></span>Backup</button>
+  <button class="head-btn due" id="headBackup" data-a="backup-save" title="Seit über einer Woche kein Backup – jetzt sichern" hidden><span class="dot"></span>Backup fällig</button>
 </header>
 <main id="view"></main>
 <nav class="tabs" id="tabs" aria-label="Bereiche"></nav>
@@ -586,7 +588,22 @@ function mdRead(v,name){
   return `${pad(m)}-${pad(Math.min(d,max))}`;
 }
 const seasonTxt=r=>r.saisonVon&&r.saisonBis?`${mdTxt(r.saisonVon)} – ${mdTxt(r.saisonBis)}`:'ganzjährig';
-function bedarf(a,g){const n=a.jeGaeste>0?Math.ceil(g/a.jeGaeste):0;const v=Math.max(n,+a.min||0);return (a.jeGaeste>0||a.min>0)?v:null;}
+/* Personalbedarf – fest hinterlegte Faustregeln, bewusst nicht in den Einstellungen.
+   Eine Person schafft über den ganzen Dienst "gesamt" Gäste, aber nur "spitze" Gäste,
+   die innerhalb von FENSTER Minuten ankommen. Beispiel Service: 25 Gäste im Halbstundentakt → 1,
+   25 Gäste gleichzeitig → 2. Laufkundschaft (geschätzt) verteilt sich, ein Viertel zählt zur Spitze. */
+const BEDARF={service:{gesamt:40,spitze:15},kueche:{gesamt:50,spitze:25}};
+const FENSTER=30;
+function peakOf(res,erwartet){
+  let best={p:0,von:''};
+  res.forEach(r=>{const t=tmin(r.zeit);const p=sum(res.filter(x=>{const m=tmin(x.zeit);return m>=t&&m<t+FENSTER;}),x=>x.personen);if(p>best.p)best={p,von:r.zeit};});
+  return {p:best.p+Math.round(erwartet/4),res:best.p,von:best.von,bis:best.von?hhmm(tmin(best.von)+FENSTER):''};
+}
+function bedarf(a,g,pk){
+  const r=BEDARF[a.id]; if(!r||g<=0) return null;
+  const nG=Math.ceil(g/r.gesamt), nS=Math.ceil(pk.p/r.spitze);
+  return {n:Math.max(1,nG,nS),spitze:nS>nG&&nS>1};
+}
 
 /* Kernfrage: Gäste, Räume, Personal für einen Dienst */
 function svcInfo(d,k){
@@ -596,17 +613,19 @@ function svcInfo(d,k){
   const ohneRaum=sum(res.filter(x=>!raumById(x.raum)),x=>x.personen);
   const plaetze=sum(rooms.filter(z=>z.open),z=>z.r.plaetze);
   const shifts=S.shifts.filter(x=>x.datum===d&&shiftIn(x,k));
+  const peak=peakOf(res,erwartet);
   const depts=S.abteilungen.map(a=>{
     const sh=shifts.filter(x=>x.abt===a.id).sort(byTime);
     const ids=[...new Set(sh.map(x=>x.staff))];
     const off=!!(S.abtAus[d+'|'+k]||{})[a.id];
     // Bedarf nur, wenn Gäste kommen und die Abteilung in diesem Dienst gebraucht wird
-    return {a,n:ids.length,off,need:(off||gaeste<=0)?null:bedarf(a,gaeste),list:sh.map(x=>({s:staffById(x.staff),x})).filter(z=>z.s)};
+    const b=off?null:bedarf(a,gaeste,peak);
+    return {a,n:ids.length,off,need:b?b.n:null,spitze:!!(b&&b.spitze),list:sh.map(x=>({s:staffById(x.staff),x})).filter(z=>z.s)};
   });
   const fehlt=depts.filter(z=>z.need!==null&&z.need>z.n);
   const raumAlarm=rooms.filter(z=>!z.open&&z.pers>0);
   const voll=rooms.filter(z=>z.open&&z.r.plaetze&&z.pers>z.r.plaetze);
-  return {d,k,res,reserviert,erwartet,gaeste,rooms,ohneRaum,plaetze,depts,fehlt,raumAlarm,voll};
+  return {d,k,peak,res,reserviert,erwartet,gaeste,rooms,ohneRaum,plaetze,depts,fehlt,raumAlarm,voll};
 }
 
 /* Konflikte im Dienstplan (nur das Nötigste) */
@@ -662,14 +681,11 @@ function download(name,content,type){
   setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
 }
 async function copyText(t){
-  try{await navigator.clipboard.writeText(t);toast('In die Zwischenablage kopiert');return;}catch(e){}
+  try{await navigator.clipboard.writeText(t);toast('In die Zwischenablage kopiert');return true;}catch(e){}
   const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();
   let ok=false;try{ok=document.execCommand('copy');}catch(e){} ta.remove();
   toast(ok?'In die Zwischenablage kopiert':'Kopieren nicht möglich – bitte Text manuell markieren',{err:!ok});
-}
-async function shareText(title,text){
-  if(navigator.share){ try{await navigator.share({title,text});return;}catch(e){if(e&&e.name==='AbortError')return;} }
-  copyText(text);
+  return ok;
 }
 function phoneIntl(p){
   let d=String(p||'').replace(/[^\d+]/g,''); if(!d) return '';
@@ -682,13 +698,13 @@ const telHref=p=>'tel:'+String(p||'').replace(/[^\d+]/g,'');
 function backupDue(){if(!S)return false;const m=S.meta;return !!m.lastChange&&m.lastChange>m.lastBackup&&(Date.now()-m.lastBackup>7*864e5);}
 function updateHead(){
   const b=$('#headBackup'); if(!b||!S) return;
-  b.classList.toggle('due',backupDue());
+  b.hidden=!backupDue();
   const nm=(S.betrieb.name||'Gasthof Ratz').trim(), mm=nm.match(/^(Gasthof|Gasthaus|Landgasthof|Wirtshaus)\s+(.+)$/i);
   $('#brand .bt').innerHTML=mm?`<small>${esc(mm[1])}</small><b>${esc(mm[2])}</b>`:`<b>${esc(nm)}</b>`;
 }
 function renderTabs(){
   $('#tabs').innerHTML=TABS.map(([id,l,ic])=>`<button data-a="tab" data-t="${id}" ${UI.tab===id?'aria-current="page"':''}>${ic}<span>${l}</span></button>`).join('');
-  $('#tabs').hidden=!S; $('#headBackup').hidden=!S;
+  $('#tabs').hidden=!S; if(!S) $('#headBackup').hidden=true;
 }
 function render(){
   renderTabs(); updateHead();
@@ -726,10 +742,8 @@ function viewWelcome(){
 /* ---------- Übersicht ---------- */
 function viewStart(){
   const from=UI.week,to=addD(from,6),t=today();
-  const banner=backupDue()?`<div class="notice warn" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span style="flex:1;min-width:200px"><b>Backup fällig.</b> ${S.meta.lastBackup?'Letztes Backup am '+fmtTS(S.meta.lastBackup)+'.':'Noch kein Backup gemacht.'}</span><button class="btn sm primary" data-a="backup-dl">Jetzt sichern</button></div>`:'';
   const hasStaff=S.staff.some(s=>s.aktiv!==false);
   return `<div class="toolbar">${weekNav()}<span class="spacer"></span><button class="btn sm" data-a="res-new">+ Reservierung</button><button class="btn sm" data-a="rep-preset" data-type="week" data-p="custom-week">Senden</button></div>
-  ${banner}
   ${hasStaff?'':`<div class="notice">Noch kein Personal angelegt. <button class="btn sm" data-a="tab" data-t="staff">Personal anlegen</button></div>`}
   <div class="stack">${days(from,to).map(d=>dayCard(d,t)).join('')}</div>`;
 }
@@ -767,14 +781,14 @@ function svcBlock(I,zeit){
         <span class="split">${I.reserviert} reserviert<br>+ <input type="number" min="0" max="999" inputmode="numeric" value="${I.erwartet||''}" placeholder="0" data-ch="erwartet" data-key="${key}" aria-label="Zusätzlich erwartete Gäste"> erwartet</span></div>
       <div class="svc-side">
         <div><div class="sublbl">Räume${I.plaetze?` · ${I.plaetze} Plätze offen`:''}</div><div class="rooms">${rooms}</div>${over?`<div class="hint" style="color:var(--danger)">Mehr Gäste als Plätze in den offenen Räumen.</div>`:''}${I.ohneRaum?`<div class="hint">${I.ohneRaum} Gäste ohne Raum.</div>`:''}</div>
-        <div><div class="sublbl">Personal${I.depts.some(z=>z.need!==null)?' · eingeteilt / Bedarf':''}${I.depts.some(z=>z.need!==null||z.off)?' · tippen = nicht nötig':''}</div><div class="staffline">${staff}</div>${names?`<div class="names">${names}</div>`:''}</div>
+        <div><div class="sublbl">Personal${I.depts.some(z=>z.need!==null)?' · eingeteilt / Bedarf':''}${I.depts.some(z=>z.need!==null||z.off)?' · tippen = nicht nötig':''}</div><div class="staffline">${staff}</div>${names?`<div class="names">${names}</div>`:''}${I.depts.some(z=>z.spitze)?`<div class="names" style="color:var(--brass)">Mehr Personal wegen Ankunftsspitze ${esc(I.peak.von)}–${esc(I.peak.bis)}: ${I.peak.p} Gäste${I.peak.p>I.peak.res?' (inkl. geschätzter Laufkundschaft)':''}</div>`:''}</div>
       </div>
     </div>
-    <div class="btn-row" style="margin-top:10px">${I.fehlt.length?`<button class="btn sm warn" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="${I.fehlt[0].a.id}">Wer hat Zeit?</button>`:`<button class="btn sm ghost" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="">Wer hat Zeit?</button>`}<button class="btn sm ghost" data-a="res-new" data-d="${I.d}" data-z="${I.k==='M'?'12:00':'18:30'}">+ Reservierung</button></div>
+    <div class="btn-row" style="margin-top:10px">${I.fehlt.length?`<button class="btn sm warn" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="${I.fehlt[0].a.id}">Personal zuteilen</button>`:`<button class="btn sm ghost" data-a="who" data-d="${I.d}" data-k="${I.k}" data-abt="">Personal zuteilen</button>`}<button class="btn sm ghost" data-a="res-new" data-d="${I.d}" data-z="${I.k==='M'?'12:00':'18:30'}">+ Reservierung</button></div>
     ${I.res.length?`<div class="reslist">${I.res.map(r=>`<button data-a="res-edit" data-id="${r.id}"><span class="t">${esc(r.zeit)}</span><span class="n">${esc(r.name)}${r.kommentar?` <span style="color:var(--brass)">· ${esc(r.kommentar)}</span>`:''}</span><span class="r">${esc(r.personen)} P.${raumById(r.raum)?' · '+esc(raumById(r.raum).name):''}</span></button>`).join('')}</div>`:''}
   </div>`;
 }
-/* Wer hat Zeit? – freie Leute einer Abteilung für einen Dienst */
+/* Personal zuteilen – freie Leute einer Abteilung für einen Dienst */
 function openWho(d,k,abt){
   const I=svcInfo(d,k);
   const depts=abt?[dept(abt)]:S.abteilungen;
@@ -802,7 +816,7 @@ function openWho(d,k,abt){
       ${r.free?`<span class="btn-row">${r.s.tel?`<a class="btn sm" href="${telHref(r.s.tel)}">Anrufen</a><a class="btn sm" href="https://wa.me/${phoneIntl(r.s.tel)}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn sm primary" data-a="who-assign" data-s="${r.s.id}" data-d="${d}" data-t="${tp?tp.id:''}">Einteilen</button></span>`:''}</div>`;
     }).join(''):'<div class="empty">Niemand in dieser Abteilung angelegt.</div>';
   }
-  modal('Wer hat Zeit?',b,`<button class="btn" data-a="mclose">Schließen</button>`);
+  modal('Personal zuteilen',b,`<button class="btn" data-a="mclose">Schließen</button>`);
 }
 
 /* ---------- Dienstplan ---------- */
@@ -1017,17 +1031,24 @@ function viewSetup(){
   const hasSample=S.staff.some(s=>s.sample)||S.reservations.some(r=>r.sample);
   const special=S.hours.special.filter(x=>UI.showPastSpecial||(x.bis||x.von)>=t).sort((a,c)=>a.von.localeCompare(c.von));
   return `<div class="toolbar"><h1>Betrieb</h1></div>
-  <div class="jump">${[['sec-backup','Backup'],['sec-open','Mittag / Abend'],['sec-special','Sondertage'],['sec-rooms','Räume'],['sec-abt','Abteilungen & Bedarf'],['sec-tpl','Schichtvorlagen'],['sec-betrieb','Stammdaten']].map(([i,l])=>`<button class="btn sm" data-a="jump" data-t="${i}">${l}</button>`).join('')}</div>
+  <div class="jump">${[['sec-backup','Backup'],['sec-open','Mittag / Abend'],['sec-special','Sondertage'],['sec-rooms','Räume'],['sec-abt','Abteilungen'],['sec-tpl','Schichtvorlagen'],['sec-betrieb','Stammdaten']].map(([i,l])=>`<button class="btn sm" data-a="jump" data-t="${i}">${l}</button>`).join('')}</div>
   <div class="stack">
   <section class="card" id="sec-backup"><h2>Backup</h2>
-    <div class="notice ${backupDue()?'warn':m.lastBackup?'ok':''}">${m.lastBackup?`Letztes Backup: <b>${fmtTS(m.lastBackup)}</b>`:'Noch kein Backup gemacht.'}</div>
-    ${ART?'<div class="notice warn">Testversion: Dateien herunterladen ist hier gesperrt. „Backup herunterladen“ zeigt deshalb das Backup als Text zum Kopieren. Einspielen geht per Datei oder Text.</div>':''}<p class="hint">Die Daten liegen nur in diesem Browser auf diesem Gerät. Lade deshalb etwa einmal pro Woche ein Backup herunter oder schick es dir per „Teilen“ selbst, z. B. per Mail.</p>
-    <div class="btn-row" style="margin-top:10px"><button class="btn primary" data-a="backup-dl">Backup herunterladen</button><button class="btn" data-a="backup-share">Backup teilen / senden</button></div>
+    <div class="notice ${backupDue()?'warn':m.lastBackup?'ok':''}">${m.lastBackup?`Letztes Backup: <b>${fmtTS(m.lastBackup)}</b>${backupDue()?' – wieder fällig':''}`:'Noch kein Backup gemacht.'}</div>
+    <p class="hint">Alle Daten liegen nur auf diesem Gerät. Sichere sie etwa einmal pro Woche. Oben erscheint „Backup fällig“, wenn es wieder Zeit ist.</p>
+    ${ART?'<div class="notice warn"><b>Testversion:</b> Hier sind Dateien gesperrt. Das Backup läuft deshalb als Text: kopieren und z. B. in eine Mail einfügen. In der richtigen Version am Handy ist es eine Datei.</div>':''}
+    <h3>Sichern</h3>
+    <div class="btn-row"><button class="btn primary" data-a="backup-save">${ART?'Backup als Text kopieren':'Backup sichern'}</button></div>
+    ${ART?'':'<p class="hint">Am Handy öffnet sich das Teilen-Menü. Dort wählst du z. B. „In Drive speichern“, „In Dateien sichern“ oder schickst es dir per Mail. Am PC landet die Datei im Ordner „Downloads“.</p>'}
     <h3>Wiederherstellen</h3>
-    <div class="btn-row"><button class="btn" data-a="import">Backup-Datei einspielen…</button><button class="btn ghost" data-a="import-text">Backup-Text einfügen…</button><button class="btn ghost" data-a="backup-text">Backup als Text…</button></div>
-    <p class="hint">Vor jedem Einspielen wird der aktuelle Stand automatisch gesichert.</p>
-    <h3>Automatische Sicherungen auf dem Gerät</h3>
-    ${sn.length?sn.map((x,i)=>`<div class="snap"><div class="grow"><b>${fmtTS(x.ts)}</b><br><small class="muted">${esc(x.reason)} · ${(x.data.staff||[]).length} Personen · ${(x.data.shifts||[]).length} Schichten · ${(x.data.reservations||[]).length} Reservierungen</small></div><button class="btn sm" data-a="snap-restore" data-i="${i}">Wiederherstellen</button></div>`).join(''):'<div class="empty">Noch keine. Sie entsteht einmal täglich beim ersten Öffnen.</div>'}
+    <div class="btn-row"><button class="btn" data-a="${ART?'import-text':'import'}">${ART?'Backup-Text einfügen…':'Backup einspielen…'}</button></div>
+    <p class="hint">Ersetzt die Daten auf diesem Gerät. Der aktuelle Stand wird vorher automatisch gesichert.</p>
+    <details class="more"><summary>Weitere Möglichkeiten</summary>
+      <div class="btn-row" style="margin-top:8px">${ART?'<button class="btn sm" data-a="import">Backup-Datei einspielen…</button>':'<button class="btn sm" data-a="backup-text">Backup als Text kopieren…</button><button class="btn sm" data-a="import-text">Backup-Text einfügen…</button>'}</div>
+      <h3>Automatische Sicherungen auf diesem Gerät</h3>
+      <p class="hint" style="margin-top:0">Einmal täglich und vor jedem Einspielen, die letzten ${MAX_SNAPS}. Hilft bei einem Fehlgriff, ersetzt aber kein Backup.</p>
+      ${sn.length?sn.map((x,i)=>`<div class="snap"><div class="grow"><b>${fmtTS(x.ts)}</b><br><small class="muted">${esc(x.reason)} · ${(x.data.staff||[]).length} Personen · ${(x.data.shifts||[]).length} Schichten · ${(x.data.reservations||[]).length} Reservierungen</small></div><button class="btn sm" data-a="snap-restore" data-i="${i}">Wiederherstellen</button></div>`).join(''):'<div class="empty">Noch keine.</div>'}
+    </details>
   </section>
 
   <section class="card" id="sec-open"><h2>Offen zu Mittag / Abend</h2>
@@ -1057,9 +1078,9 @@ function viewSetup(){
     ${S.raeume.map(r=>`<div class="erow"><input class="inp" name="rn_${r.id}" value="${esc(r.name)}" required aria-label="Raum"><span class="mini"><input type="number" min="0" name="rp_${r.id}" value="${esc(r.plaetze||'')}" aria-label="Plätze"> Plätze</span><label class="chk"><input type="checkbox" name="rs_${r.id}" ${r.standard?'checked':''}> normal offen</label><span class="mini season">Saison ${mdPick('rsv_'+r.id,r.saisonVon,'von')} bis ${mdPick('rsb_'+r.id,r.saisonBis,'bis')} <small>jedes Jahr</small></span><button type="button" class="btn sm danger-ghost" data-a="raum-del" data-id="${r.id}">Entfernen</button></div>`).join('')}
     <div class="btn-row" style="margin-top:8px"><button type="button" class="btn sm ghost" data-a="raum-add">+ Raum</button><span class="spacer"></span><button class="btn primary">Speichern</button></div>
   </section>
-  <section class="card" id="sec-abt"><h2>Abteilungen & Personalbedarf</h2>
-    <p class="hint" style="margin-top:0">Die Faustregel zeigt in der Übersicht, ob das Personal für die erwarteten Gäste reicht. Beispiel: 1 Kellner je 25 Gäste, mindestens 1. Mit 0 bei beidem wird für die Abteilung nichts berechnet.</p>
-    ${S.abteilungen.map(a=>`<div class="erow"><input type="color" name="ac_${a.id}" value="${col(a.farbe)}" aria-label="Farbe"><input class="inp" name="an_${a.id}" value="${esc(a.name)}" required aria-label="Name"><span class="mini">1 je <input type="number" min="0" name="aj_${a.id}" value="${esc(a.jeGaeste||0)}" aria-label="Gäste pro Person"> Gäste</span><span class="mini">mind. <input type="number" min="0" name="am_${a.id}" value="${esc(a.min||0)}" aria-label="Mindestens"></span><button type="button" class="btn sm danger-ghost" data-a="abt-del" data-id="${a.id}">Entfernen</button></div>`).join('')}
+  <section class="card" id="sec-abt"><h2>Abteilungen</h2>
+    <p class="hint" style="margin-top:0">Für <b>Service</b> und <b>Küche</b> berechnet das Tool den Personalbedarf automatisch aus Gästezahl und Ankunftszeiten. Kommen viele Gäste gleichzeitig, braucht es mehr Leute als bei verteilten Ankünften. Einstellen musst du dafür nichts.</p>
+    ${S.abteilungen.map(a=>`<div class="erow"><input type="color" name="ac_${a.id}" value="${col(a.farbe)}" aria-label="Farbe"><input class="inp" name="an_${a.id}" value="${esc(a.name)}" required aria-label="Name"><button type="button" class="btn sm danger-ghost" data-a="abt-del" data-id="${a.id}">Entfernen</button></div>`).join('')}
     <div class="btn-row" style="margin-top:8px"><button type="button" class="btn sm ghost" data-a="abt-add">+ Abteilung</button><span class="spacer"></span><button class="btn primary">Speichern</button></div>
   </section>
   </form>
@@ -1103,13 +1124,15 @@ function openSpecialForm(id){
 function backupName(){const d=new Date();return `GasthofRatz_Backup_${iso(d)}_${pad(d.getHours())}${pad(d.getMinutes())}.json`;}
 function backupJSON(data=S){return JSON.stringify({app:APP_ID,version:VERSION,exported:new Date().toISOString(),data},null,1);}
 function markBackup(){S.meta.lastBackup=Date.now();writeData();render();}
-function backupDownload(){if(ART){ACT['backup-text']();return;}download(backupName(),backupJSON(),'application/json');markBackup();toast('Backup gespeichert (Ordner „Downloads“)');}
-async function backupShare(){if(ART){ACT['backup-text']();return;}
+/* Ein Knopf "Backup sichern": am Handy Teilen-Menü (Drive, Mail, Dateien …), sonst Download; in der Testversion als Text */
+async function backupSave(){
+  if(ART){ACT['backup-text']();return;}
+  const json=backupJSON(), name=backupName();
   try{
-    const file=new File([backupJSON()],backupName(),{type:'application/json'});
-    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Backup '+S.betrieb.name});markBackup();toast('Backup geteilt');return;}
+    const file=new File([json],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Backup '+S.betrieb.name});markBackup();toast('Backup gesichert');return;}
   }catch(e){if(e&&e.name==='AbortError')return;}
-  backupDownload();
+  download(name,json,'application/json'); markBackup(); toast('Backup gespeichert (Ordner „Downloads“)');
 }
 function extractBackup(obj){
   const d=(obj&&obj.app===APP_ID&&obj.data)?obj.data:obj;
@@ -1322,10 +1345,9 @@ function viewReports(){
   <div class="repactions">
     ${ART?'':'<button class="btn primary" data-a="rep-print">Drucken / PDF</button>'}
     <a class="btn${ART?' primary':''}" href="https://wa.me/${phoneIntl(rep.phone)}?text=${encodeURIComponent(rep.text)}" target="_blank" rel="noopener">WhatsApp${rep.phone?' an '+esc(firstName(rep.person.name)):''}</a>
-    <button class="btn" data-a="rep-share">Teilen</button>
     <button class="btn" data-a="rep-copy">Text kopieren</button>
   </div>
-  <p class="hint" style="margin:-4px 0 10px">${ART?'Testversion: Drucken/PDF gibt es nur in der richtigen Datei am Handy. ':''}PDF: Bei „Drucken“ als Drucker „Als PDF speichern“ wählen. WhatsApp, Teilen und Kopieren schicken den Report als Text.</p>
+  <p class="hint" style="margin:-4px 0 10px">${ART?'Testversion: Drucken/PDF gibt es nur in der richtigen Datei am Handy. ':''}PDF: Bei „Drucken“ als Drucker „Als PDF speichern“ wählen. WhatsApp und „Text kopieren“ geben den Report als Text weiter, z. B. für eine Mail.</p>
   <div class="paper">${repDoc(rep)}</div>`;
 }
 function repPrint(){
@@ -1348,10 +1370,10 @@ const ACT={
   'import-do':()=>doImport(),
   'import-text':()=>modal('Backup-Text einfügen',`<textarea class="code" id="imptext" placeholder='{"app":"gasthof-ratz-planer", …}'></textarea>`,`<button class="btn" data-a="mclose">Abbrechen</button><button class="btn primary" data-a="import-text-go">Prüfen</button>`),
   'import-text-go':()=>{try{const obj=JSON.parse($('#imptext').value);confirmImport(extractBackup(obj),obj.exported,'Backup-Text');}catch(e){toast('Kein gültiges Backup: '+e.message,{err:true});}},
-  'backup-dl':()=>backupDownload(),
-  'backup-share':()=>backupShare(),
-  'backup-text':()=>modal('Backup als Text',`<p class="hint" style="margin-top:0">Kopieren und z. B. in eine Mail an dich selbst einfügen.</p><textarea class="code" readonly id="exptext">${esc(backupJSON())}</textarea>`,`<button class="btn" data-a="mclose">Schließen</button><button class="btn primary" data-a="backup-text-copy">Kopieren</button>`),
-  'backup-text-copy':()=>{copyText($('#exptext').value);S.meta.lastBackup=Date.now();writeData();updateHead();},
+  'backup-save':()=>backupSave(),
+  'backup-text':()=>modal('Backup als Text',`<p class="hint" style="margin-top:0">Den Text kopieren und z. B. in eine Mail an dich selbst oder in eine Notiz einfügen. Wiederherstellen kannst du ihn mit „Backup-Text einfügen“.</p><textarea class="code" readonly id="exptext">${esc(backupJSON())}</textarea><p class="hint" id="exphint"></p>`,`<button class="btn" data-a="backup-text-done">Erledigt, Text ist gesichert</button><button class="btn primary" data-a="backup-text-copy">Kopieren</button>`),
+  'backup-text-copy':async()=>{const ok=await copyText($('#exptext').value);if(ok){closeModal();markBackup();toast('Backup-Text kopiert – jetzt z. B. in eine Mail einfügen');}else{const t=$('#exptext');t.focus();t.select();$('#exphint').textContent='Der Text ist markiert. Bitte selbst kopieren (lange drücken → Kopieren) und dann „Erledigt“ tippen.';}},
+  'backup-text-done':()=>{closeModal();markBackup();toast('Backup vermerkt');},
   'snap-restore':d=>{const x=getSnaps()[+d.i];if(!x)return;try{confirmImport(extractBackup(x.data),x.ts,'Automatische Sicherung');}catch(e){toast(e.message,{err:true});}},
   'sample-remove':async()=>{if(await ask('Beispieldaten entfernen?','Alle mit „(Beispiel)“ markierten Personen samt Schichten und die Beispiel-Reservierungen werden gelöscht.','Entfernen',true))commit('Beispieldaten entfernt',removeSample);},
   reset:()=>modal('Alle Daten löschen',`<div class="notice err">Löscht alles auf diesem Gerät. Die automatischen Sicherungen bleiben erhalten.</div><div class="field"><label for="resetc">Zur Bestätigung <b>LÖSCHEN</b> eintippen</label><input id="resetc" class="inp" autocomplete="off"></div>`,`<button class="btn" data-a="mclose">Abbrechen</button><button class="btn danger" data-a="reset-go">Endgültig löschen</button>`,'small'),
@@ -1450,7 +1472,6 @@ const ACT={
   'rep-preset':d=>{UI.rep.type=d.type;if(d.p==='custom-week'){UI.rep.period='custom';UI.rep.from=UI.week;UI.rep.to=addD(UI.week,6);UI.rep.dept=d.type==='plan'?UI.planDept:'';}else UI.rep.period=d.p;go('reports');},
   'rep-period':d=>{UI.rep.period=d.p;if(d.p==='custom'&&!UI.rep.from){const [a,b]=periodRange('nextweek');UI.rep.from=a;UI.rep.to=b;}saveUI();render();},
   'rep-print':()=>repPrint(),
-  'rep-share':()=>{const r=buildReport();shareText(`${r.title} – ${S.betrieb.name}`,r.text);},
   'rep-copy':()=>copyText(buildReport().text),
 };
 
@@ -1464,7 +1485,7 @@ function applyHoursForm(v){
 }
 function applyAbtForm(){
   const f=$('#f-abt'); if(!f) return; const v=fd(f);
-  S.abteilungen.forEach(a=>{if(v['an_'+a.id]!==undefined){a.name=v['an_'+a.id].trim()||a.name;a.farbe=col(v['ac_'+a.id]);a.jeGaeste=Math.max(0,+v['aj_'+a.id]||0);a.min=Math.max(0,+v['am_'+a.id]||0);}});
+  S.abteilungen.forEach(a=>{if(v['an_'+a.id]!==undefined){a.name=v['an_'+a.id].trim()||a.name;a.farbe=col(v['ac_'+a.id]);}});
   S.raeume.forEach(r=>{if(v['rn_'+r.id]!==undefined){r.name=v['rn_'+r.id].trim()||r.name;r.plaetze=+v['rp_'+r.id]||0;r.standard=!!v['rs_'+r.id];
     const a=mdRead(v,'rsv_'+r.id), b=mdRead(v,'rsb_'+r.id);
     if(a&&b){r.saisonVon=a;r.saisonBis=b;} else {r.saisonVon='';r.saisonBis='';}}});

@@ -10,8 +10,9 @@ Für die Fragen, die sich jede Woche stellen:
 - **Wie viele Gäste kommen am Freitag zu Mittag oder am Abend?** Reservierte Gäste plus eine eigene Schätzung für Gäste ohne Reservierung.
 - **Welche Räume machen wir auf?** Gaststube, Stüberl, Saal und Gastgarten lassen sich pro Tag und Dienst per Tipp auf- oder zusperren.
   Wenn jemand in einem gesperrten Raum reserviert hat, weist das Tool darauf hin.
-- **Reicht das Personal?** Es vergleicht die Eingeteilten mit einer einfachen Faustregel, z. B. 1 Kellner je 25 Gäste.
-  Fehlt jemand, zeigt **„Wer hat Zeit?“** die freien Leute an, Springer zuerst. Von dort lassen sie sich anrufen, per WhatsApp anfragen oder gleich einteilen.
+- **Reicht das Personal?** Für Service und Küche berechnet das Tool den Bedarf automatisch aus Gästezahl **und Ankunftszeiten**.
+  25 Gäste im Halbstundentakt schafft eine Person, kommen sie gleichzeitig, braucht es zwei (Details in [BACKLOG.md](BACKLOG.md) unter „Umgesetzt“).
+  Fehlt jemand, zeigt **„Personal zuteilen“** die freien Leute an, Springer zuerst. Von dort lassen sie sich anrufen, per WhatsApp anfragen oder gleich einteilen.
 
 ## Bereiche
 
@@ -20,16 +21,17 @@ Für die Fragen, die sich jede Woche stellen:
 - **Gäste:** Reservierungen mit Name, Personen, Datum, Uhrzeit und Raum.
 - **Personal:** Name, Abteilung, Fix oder Springer, Telefon. Dazu Urlaub und Abwesenheiten.
 - **Reports:** Wochenvorschau, Dienstplan (für alle oder eine Person), Reservierungen und Öffnungszeiten.
-  Ausgabe als PDF (über Drucken), per WhatsApp, über Teilen oder als kopierter Text.
-- **Betrieb:** Wochenplan Mittag/Abend mit Saisonen (z. B. Winter, Sommer; gelten jedes Jahr), Sondertage und Betriebsurlaub, österreichische Feiertage, Räume, Abteilungen mit Faustregel, Schichtvorlagen und Backup.
+  Ausgabe als PDF (über Drucken), per WhatsApp oder als kopierter Text.
+- **Betrieb:** Wochenplan Mittag/Abend mit Saisonen (z. B. Winter, Sommer; gelten jedes Jahr), Sondertage und Betriebsurlaub, österreichische Feiertage, Räume, Abteilungen, Schichtvorlagen und Backup.
 
 ## Daten & Backup
 
 Alle Daten liegen **nur im Browser des Geräts**. Daher gilt:
 
-1. Etwa einmal pro Woche unter **Betrieb → Backup** ein Backup herunterladen oder per „Teilen“ an sich selbst schicken.
-   Der Knopf „Backup“ oben rechts wird orange, wenn es Zeit dafür ist.
-2. Zum Wiederherstellen, auch auf einem neuen Handy, die Option **Backup-Datei einspielen…** wählen.
+1. Etwa einmal pro Woche unter **Betrieb → Backup** auf **„Backup sichern“** tippen. Am Handy öffnet sich das Teilen-Menü,
+   z. B. für „In Drive speichern“ oder eine Mail an dich selbst. Am PC landet die Datei in „Downloads“.
+   Oben in der Kopfzeile erscheint **„Backup fällig“**, wenn es wieder Zeit ist.
+2. Zum Wiederherstellen, auch auf einem neuen Handy, **„Backup einspielen…“** wählen und die Datei auswählen.
    Vorher wird der aktuelle Stand automatisch gesichert.
 
 Zusätzlich legt das Tool einmal täglich eine automatische Sicherung auf dem Gerät an.
