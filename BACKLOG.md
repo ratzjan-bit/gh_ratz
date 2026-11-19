@@ -22,6 +22,11 @@ Im Artifact sind Datei-Downloads und Drucken gesperrt, deshalb läuft das Backup
 Über GitHub Pages lädt der Browser die Seite aus dem Netz. Meist hält er sie im Zwischenspeicher, garantiert ist das aber nicht.
 Mit einem kleinen Service Worker und einem Web-App-Manifest startet der Planer auch ohne Empfang und lässt sich sauber als App auf den Home-Bildschirm legen (eigenes Symbol, ohne Browserleiste).
 
+### Supabase mit dem GitHub-Repo verbinden
+Vorerst bewusst nicht. Supabase würde dann SQL-Dateien aus `supabase/migrations` bei jedem Push automatisch in die Live-Datenbank einspielen.
+Sinnvoll erst, wenn mehrere Leute am Code arbeiten oder sich die Datenbank-Struktur öfter ändert, z. B. eigene Tabellen pro Reservierung
+statt eines Gesamt-Datensatzes. Dann das Repo auf die Ordnerstruktur der Supabase-Werkzeuge umstellen (`config.toml`, `migrations/`).
+
 ## Umgesetzt
 
 ### Personalbedarf nach Ankunftsspitzen
