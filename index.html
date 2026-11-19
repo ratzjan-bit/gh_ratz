@@ -73,6 +73,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .login{max-width:440px;margin:30px auto}
 .login .crest{height:84px;width:auto;display:block;margin-bottom:12px;filter:var(--crest)}
 .copyline{display:flex;gap:8px;flex-wrap:wrap}
+.or{display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--muted);font-size:13px}
+.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--line)}
+.btn.big{display:flex;width:100%;padding:14px;font-size:16px;white-space:normal;text-align:center}
 .copyline input{flex:1;min-width:200px}
 body.ro .room,body.ro .cellbtn,body.ro .res-item,body.ro .reslist button,body.ro button.sl,body.ro .drow,body.ro a[data-a="cell"]{pointer-events:none;cursor:default}
 body.ro .cellbtn .plus{visibility:hidden}
@@ -875,7 +878,9 @@ function viewLogin(){
         <button class="btn primary">Anmelden</button>
       </form>
       <p class="hint">Für Admins (Bearbeiten). Passwort vergessen: im Supabase-Dashboard unter Authentication → Users neu setzen.</p>
-      <p class="hint"><a href="#lesen" data-a="login-mode" data-m="lesen">Nur ansehen (mit Lese-Passwort)</a></p>`}
+      <div class="or"><span>oder</span></div>
+      <a class="btn big" href="#lesen" data-a="login-mode" data-m="lesen">Dienstplan & Reservierungen ansehen</a>
+      <p class="hint" style="text-align:center">Fürs Team: nur ansehen, mit dem Lese-Passwort</p>`}
   </div>`;
 }
 
@@ -1267,9 +1272,12 @@ function viewSetup(){
     </form>
   </section>
 
-  <section class="card"><h2>Aufräumen</h2>
-    <div class="btn-row">${hasSample?'<button class="btn" data-a="sample-remove">Beispieldaten entfernen</button>':''}${ROLE==='admin'?'':'<button class="btn danger-ghost" data-a="reset">Alle Daten löschen…</button>'}</div>
-  </section>
+  ${ROLE==='admin'?(hasSample?`<section class="card"><h2>Beispieldaten</h2>
+    <p class="hint" style="margin-top:0">Entfernt alle mit „(Beispiel)“ markierten Personen, Schichten und Reservierungen.</p>
+    <div class="btn-row"><button class="btn" data-a="sample-remove">Beispieldaten entfernen</button></div>
+  </section>`:''):`<section class="card"><h2>Aufräumen</h2>
+    <div class="btn-row">${hasSample?'<button class="btn" data-a="sample-remove">Beispieldaten entfernen</button>':''}<button class="btn danger-ghost" data-a="reset">Alle Daten löschen…</button></div>
+  </section>`}
   </div>`;
 }
 function openTplForm(id){
