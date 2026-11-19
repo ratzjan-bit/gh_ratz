@@ -89,6 +89,12 @@ language sql stable security definer set search_path = public as $$
   select public.ist_admin() and exists (select 1 from public.einstellungen where id = 1 and lese_pw is not null);
 $$;
 
+-- Tabellenrechte für angemeldete Benutzer (neuere Supabase-Projekte vergeben sie nicht mehr automatisch).
+-- Wer was sehen/ändern darf, entscheiden trotzdem die Zugriffsregeln oben (nur Admins).
+grant select, update on public.planer to authenticated;
+grant select, insert, delete on public.admins to authenticated;
+revoke all on public.planer, public.admins, public.einstellungen from anon;
+
 revoke all on function public.lese_daten(text)    from public;
 revoke all on function public.setze_lese_pw(text) from public;
 revoke all on function public.lese_pw_gesetzt()   from public;
