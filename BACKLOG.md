@@ -18,6 +18,10 @@ Räume haben heute einen eigenen Saisonzeitraum, z. B. Gastgarten 1. Juni – 30
 ### Downloads in der Artifact-Testversion
 Im Artifact sind Datei-Downloads und Drucken gesperrt, deshalb läuft das Backup dort als Text. Über die Download-Funktion der Artifact-Plattform könnte das Backup auch dort als Datei gespeichert werden. Für die Handy-Version ist das nicht nötig.
 
+### Offline starten (GitHub Pages)
+Über GitHub Pages lädt der Browser die Seite aus dem Netz. Meist hält er sie im Zwischenspeicher, garantiert ist das aber nicht.
+Mit einem kleinen Service Worker und einem Web-App-Manifest startet der Planer auch ohne Empfang und lässt sich sauber als App auf den Home-Bildschirm legen (eigenes Symbol, ohne Browserleiste).
+
 ## Umgesetzt
 
 ### Personalbedarf nach Ankunftsspitzen
