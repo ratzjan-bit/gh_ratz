@@ -1249,8 +1249,10 @@ function repPlan(from,to,r){
     html+=`<section class="rep-block"><h2>KW ${kw(w[0])} · ${esc(rangeTxt(w[0],w[w.length-1]))}</h2><div class="tblwrap"><table class="rep-tbl"><thead><tr><th class="nm">Mitarbeiter</th>${w.map(d=>{const o=openInfo(d),hol=holiday(d);return `<th class="${o.closed?'closed':''}">${WD[wd(d)]} ${fmtShort(d)}<small>${esc(o.closed?(o.note||'geschlossen'):slotsTxt(o))}${hol?'<br>'+esc(hol):''}</small></th>`;}).join('')}</tr></thead><tbody>`;
     let last=null;
     for(const s of staff){
+      // Springer nur zeigen, wenn sie in dieser Woche eingeteilt sind
+      if(s.typ==='springer'&&!w.some(d=>idx[s.id+'|'+d])) continue;
       if(!r.dept&&s.abt!==last){last=s.abt;html+=`<tr class="grp"><td colspan="${w.length+1}">${esc(dept(s.abt).name)}</td></tr>`;}
-      html+=`<tr><th class="nm">${esc(s.name)}${s.typ==='springer'?'<small>Springer</small>':''}</th>${w.map(d=>{const sh=idx[s.id+'|'+d]||[],ab=absenceOn(s.id,d),o=openInfo(d);return `<td class="${o.closed?'closed':''}">${ab?`<em>${esc(absLabel(ab))}</em>`:''}${sh.map(x=>`<div class="t">${x.von}–${x.bis}${x.abt!==s.abt?` <small>${esc(dept(x.abt).name)}</small>`:''}</div>`).join('')}</td>`;}).join('')}</tr>`;
+      html+=`<tr><th class="nm">${esc(s.name)}${s.typ==='springer'?' (Springer)':''}</th>${w.map(d=>{const sh=idx[s.id+'|'+d]||[],ab=absenceOn(s.id,d),o=openInfo(d);return `<td class="${o.closed?'closed':''}">${ab?`<em>${esc(absLabel(ab))}</em>`:''}${sh.map(x=>`<div class="t">${x.von}–${x.bis}${x.abt!==s.abt?` <small>${esc(dept(x.abt).name)}</small>`:''}</div>`).join('')}</td>`;}).join('')}</tr>`;
     }
     html+=`</tbody></table></div></section>`;
   }
